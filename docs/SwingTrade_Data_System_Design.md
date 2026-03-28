@@ -827,9 +827,23 @@ python -m src.data.fetcher.backfill \
 
 ---
 
-**文档版本**: v1.6
+### 18.3 P0 稳定性修复 v2（2026-03-29）
+
+| 问题 | 影响 | 修复 |
+|------|------|------|
+| 回退文件无大小限制 | 磁盘写满 | alert.py 回退文件轮转(100MB)，保留5个+7天 |
+| SMTP 无超时 | 连接阻塞 | alert.py timeout=10s |
+| SQLite 连接无 timeout | 并发超时 | writer.py/loader.py timeout=30 + busy_timeout |
+| checkpoint 竞态条件 | 数据丢失 | health_check.py temp file + rename 原子写入 |
+
+**验证**：177 个测试通过
+
+---
+
+**文档版本**: v1.7
 **最后更新**: 2026-03-29
 **更新内容**:
+- v1.7: P0 稳定性修复 v2（SMTP超时、回退轮转、SQLite timeout、checkpoint原子），177测试通过
 - v1.6: P0 稳定性修复（文件锁、告警回退、SQLite备份、错误日志），152测试通过
 - v1.5: 扩大股票池至40只，新增IndexFetcher（6个宽基指数），置信度100%验证通过
 - v1.4: 新增 EastMoneySource（资金流）、price_converter（前复权转换），81个测试通过
