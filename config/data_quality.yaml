@@ -1,0 +1,44 @@
+# Data Quality Rules for StockData
+# 应用于数据入库前的校验
+
+daily_price_rules:
+  # A股价格合理范围
+  close_range: [0.01, 10000.0]
+
+  # OHLC 关系校验
+  ohlc_relationship:
+    - "low <= close <= high"
+    - "low <= open <= high"
+    - "high >= low"
+
+  # 涨跌停限制（主板 10%，科创板/创业板 20%）
+  limit_up_ratio: 0.107
+  limit_down_ratio: 0.107
+
+  # 成交量非负
+  volume_min: 0
+
+  # 涨跌幅合理范围
+  pct_chg_range: [-0.20, 0.20]
+
+fundamentals_rules:
+  # 必填字段
+  required_fields: [code, period, revenue, profit]
+
+  # 日期格式
+  date_format: "%Y-%m-%d"
+
+  # 必须为正的数值字段
+  number_fields_positive: [revenue, profit, assets, equity]
+
+halt_detection:
+  enabled: true
+  # 超过此天数连续停牌视为异常
+  consecutive_halt_days_threshold: 60
+
+cross_source_validation:
+  enabled: true
+  # 与 BaoStock 交叉验证的字段
+  compare_fields: [open, high, low, close, volume]
+  # 允许的最大差异（百分比）
+  max_diff_pct: 0.01

@@ -1,27 +1,48 @@
+# Data files
+*.parquet
+*.db
+*.db-wal
+*.db-shm
+
+# Cache and logs
+cache/
+logs/
+*.log
+
+# Status (regenerated daily)
+status/daily_status.json
+status/health_check.json
+
 # Python
 __pycache__/
-*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
 *.egg-info/
 dist/
 build/
 
-# Data
-data/*.csv
-data/*.parquet
-data/*.db
-
-# Environment
-.env
-venv/
-.venv/
-
 # IDE
 .idea/
 .vscode/
-
-# OS
-.DS_Store
 *.swp
+*.swo
+*~
 
-# Logs
-*.log
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Environment (contains secrets)
+.env
+.env.local
+*.env
+
+# Temporary files
+*.tmp
+*.temp
+*.bak

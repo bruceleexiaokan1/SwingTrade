@@ -1,0 +1,12 @@
+{
+  "tushare": {
+    "token_env": "TUSHARE_TOKEN",
+    "enabled": true
+  },
+  "akshare": {
+    "enabled": true
+  },
+  "baostock": {
+    "enabled": true
+  }
+}

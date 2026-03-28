@@ -1,0 +1,9 @@
+{
+  "stockdata_root": "/Users/bruce/workspace/trade/StockData",
+  "sqlite_dir": "sqlite",
+  "raw_dir": "raw",
+  "warm_dir": "warm",
+  "cache_dir": "cache",
+  "status_dir": "status",
+  "logs_dir": "logs"
+}

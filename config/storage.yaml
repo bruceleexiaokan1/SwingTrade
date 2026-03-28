@@ -1,0 +1,46 @@
+# Storage Configuration for StockData
+
+data_root: "/Users/bruce/workspace/trade/StockData"
+
+# Data retention policies
+retention:
+  # 温数据保留天数（热数据当日清除）
+  warm_days: 60
+
+  # 冷数据归档后永久保留
+  cold_infinite: true
+
+# Backup configuration
+backup:
+  enabled: true
+  backup_root: "/Users/bruce/backup/StockData"
+
+  # 每日增量备份保留天数
+  daily_retention_days: 7
+
+  # 每周全量备份保留数量
+  weekly_retention_count: 4
+
+  # 每月全量备份保留数量
+  monthly_retention_count: 12
+
+# Maintenance schedule
+maintenance:
+  # SQLite VACUUM 频率
+  vacuum_schedule: "weekly"  # weekly | monthly | manual
+
+  # SQLite REINDEX 频率
+  reindex_schedule: "monthly"
+
+  # WAL 文件大小阈值（MB），超过则告警
+  wal_size_threshold_mb: 100
+
+# Alert thresholds
+alert_thresholds:
+  # 采集成功率低于此值告警
+  fetch_success_rate_warning: 0.995
+  fetch_success_rate_error: 0.99
+
+  # 存储空间使用率高于此值告警
+  storage_usage_critical: 0.90
+  storage_usage_warning: 0.80
