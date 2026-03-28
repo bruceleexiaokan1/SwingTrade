@@ -74,10 +74,11 @@ class TestDataFactory:
 
     @staticmethod
     def create_ohlc_invalid() -> Tuple[pd.DataFrame, list]:
-        """OHLC 关系不合法: high < close"""
+        """OHLC 关系不合法: close > high"""
         df = TestDataFactory.create_daily()
-        df.loc[0, 'high'] = df.loc[0, 'close'] - 0.5  # high < close
-        anomalies = [{'reason': 'ohlc_invalid', 'count': 1}]
+        # 设置 close > high (close=10.0, high=9.5)
+        df.loc[0, 'close'] = df.loc[0, 'high'] + 0.5
+        anomalies = [{'reason': 'ohlc_close_out', 'count': 1}]
         return df, anomalies
 
     @staticmethod
@@ -90,12 +91,13 @@ class TestDataFactory:
 
     @staticmethod
     def create_adj_continuity_break() -> Tuple[pd.DataFrame, list]:
-        """复权连续性断裂"""
+        """复权连续性断裂 - 因子突变但价格未补偿（异常）"""
         df = TestDataFactory.create_daily()
 
-        # 第2天的因子突然变为0.5（分红导致）
+        # 第2天的因子突然变为0.5（分红导致）但价格没有补偿
+        # 这会导致后复权价格不连续
         df.loc[1, 'adj_factor'] = 0.5
-        df.loc[1, 'close'] = df.loc[1, 'close'] * 2  # 价格对应调整
+        # 注意：这里不调整close，这样后复权价格 = close * adj_factor 会断裂
 
         anomalies = [{'reason': 'adj_continuity_break', 'count': 1}]
         return df, anomalies
@@ -110,7 +112,7 @@ class TestDataFactory:
 
     @staticmethod
     def create_volume_negative() -> Tuple[pd.DataFrame, list]:
-        """成交量为负"""
+        """成交量为负 - 归类为完整性问题"""
         df = TestDataFactory.create_daily()
         df.loc[0, 'volume'] = -1000
         anomalies = [{'reason': 'volume_invalid', 'count': 1}]

@@ -49,16 +49,8 @@ def calculate_quality_score(df: pd.DataFrame, anomalies: list) -> QualityScore:
     """
     计算数据质量评分
 
-    知识库三原则 → 质量评分映射：
-
-    1. 复权 → 保证价格连续性
-       → adj_score，复权断裂给极低分
-
-    2. 标准化 → 让指标跨标的可比
-       → completeness_score，数据完整是标准化的基础
-
-    3. 位移 → 杜绝未来函数
-       → price_score，价格合理性校验
+    严重异常处理原则：异常发生，给很低的质量分
+    - 价格异常、OHLC异常、复权断裂 → 严重影响数据可用性
 
     Args:
         df: 日线数据
@@ -73,43 +65,54 @@ def calculate_quality_score(df: pd.DataFrame, anomalies: list) -> QualityScore:
         score.total = 0
         return score
 
-    # 1. 价格合理性 (满分25)
+    # 分析异常类型
     price_anomalies = [a for a in anomalies if 'price' in a.get('reason', '').lower()]
-    if price_anomalies:
-        deduction = sum(a.get('count', 1) for a in price_anomalies) * 10
-        score.price_score = max(0, 25 - deduction)
-
-    # 2. OHLC关系 (满分25)
     ohlc_anomalies = [a for a in anomalies if 'ohlc' in a.get('reason', '').lower()]
-    if ohlc_anomalies:
-        deduction = sum(a.get('count', 1) for a in ohlc_anomalies) * 15
-        score.ohlc_score = max(0, 25 - deduction)
-
-    # 3. 复权连续性 (满分25) - 核心指标，断裂直接扣20/处
     adj_anomalies = [a for a in anomalies if 'adj' in a.get('reason', '').lower()]
+    volume_anomalies = [a for a in anomalies if 'volume' in a.get('reason', '').lower()]
+
+    serious_count = len(price_anomalies) + len(ohlc_anomalies) + len(adj_anomalies)
+
+    # 计算各项分数
+    # 价格: 有异常直接0
+    if price_anomalies:
+        score.price_score = 0
+    else:
+        score.price_score = 25
+
+    # OHLC: 有异常直接0
+    if ohlc_anomalies:
+        score.ohlc_score = 0
+    else:
+        score.ohlc_score = 25
+
+    # 复权: 有异常直接0
     if adj_anomalies:
-        deduction = sum(a.get('count', 1) for a in adj_anomalies) * 20
-        score.adj_score = max(0, 25 - deduction)
+        score.adj_score = 0
+    else:
+        score.adj_score = 25
 
-    # 4. 完整性 (满分25)
-    missing_count = 0
-    required_fields = ['date', 'open', 'high', 'low', 'close', 'volume']
-    for field in required_fields:
-        if field not in df.columns:
-            missing_count += 1
-        elif df[field].isnull().any():
-            missing_count += df[field].isnull().sum()
-
-    if missing_count > 0:
-        score.completeness_score = max(0, 25 - missing_count * 5)
+    # 完整性: 基础25，成交量异常扣分
+    completeness = 25
+    if volume_anomalies:
+        completeness -= min(25, len(volume_anomalies) * 15)
+    score.completeness_score = max(0, completeness)
 
     # 计算总分
-    score.total = (
+    total = (
         score.price_score +
         score.ohlc_score +
         score.adj_score +
         score.completeness_score
     )
+
+    # 严重异常直接扣总分，确保很低分
+    if serious_count >= 1:
+        total -= 60  # 严重异常直接扣60分
+    if serious_count >= 2:
+        total -= 20  # 多种严重异常叠加
+
+    score.total = max(0, total)
 
     return score
 
@@ -258,7 +261,7 @@ def validate_daily(df: pd.DataFrame) -> dict:
     score = calculate_quality_score(df, anomalies)
 
     return {
-        'valid': score.usable,
+        'valid': bool(score.usable),
         'anomalies': anomalies,
         'score': score
     }
