@@ -1,6 +1,6 @@
 # StockData 数据存储方案
 
-**版本**: v1.1
+**版本**: v1.2
 **状态**: 设计完成，已审批
 **置信度**: 100%
 
@@ -449,32 +449,85 @@ class QualityScore:
 
 
 def calculate_quality_score(df: pd.DataFrame, anomalies: list) -> QualityScore:
-    """计算数据质量评分"""
+    """
+    计算数据质量评分
+
+    严重异常处理原则：异常发生，给很低的质量分
+    - 价格异常、OHLC异常、复权断裂 → 严重影响数据可用性
+
+    Args:
+        df: 日线数据
+        anomalies: 异常列表
+
+    Returns:
+        QualityScore: 质量评分
+    """
     score = QualityScore()
 
-    # 1. 价格合理性 (满分25)
-    price_anomalies = [a for a in anomalies if 'price' in a.get('reason', '')]
+    if df.empty:
+        score.total = 0
+        return score
+
+    # 分析异常类型
+    price_anomalies = [a for a in anomalies if 'price' in a.get('reason', '').lower()]
+    ohlc_anomalies = [a for a in anomalies if 'ohlc' in a.get('reason', '').lower()]
+    adj_anomalies = [a for a in anomalies if 'adj' in a.get('reason', '').lower()]
+    volume_anomalies = [a for a in anomalies if 'volume' in a.get('reason', '').lower()]
+
+    serious_count = len(price_anomalies) + len(ohlc_anomalies) + len(adj_anomalies)
+
+    # 计算各项分数
+    # 价格: 有异常直接0
     if price_anomalies:
-        score.price_score = max(0, 25 - len(price_anomalies) * 10)
+        score.price_score = 0
+    else:
+        score.price_score = 25
 
-    # 2. OHLC关系 (满分25)
-    ohlc_anomalies = [a for a in anomalies if 'ohlc' in a.get('reason', '')]
+    # OHLC: 有异常直接0
     if ohlc_anomalies:
-        score.ohlc_score = max(0, 25 - len(ohlc_anomalies) * 15)
+        score.ohlc_score = 0
+    else:
+        score.ohlc_score = 25
 
-    # 3. 复权连续性 (满分25) - 核心指标，断裂直接扣20/处
-    adj_anomalies = [a for a in anomalies if 'adj' in a.get('reason', '')]
+    # 复权: 有异常直接0
     if adj_anomalies:
-        score.adj_score = max(0, 25 - len(adj_anomalies) * 20)
+        score.adj_score = 0
+    else:
+        score.adj_score = 25
 
-    # 4. 完整性 (满分25)
-    missing_rows = df.isnull().sum().sum()
-    if missing_rows > 0:
-        score.completeness_score = max(0, 25 - missing_rows * 5)
+    # 完整性: 基础25，成交量异常扣分
+    completeness = 25
+    if volume_anomalies:
+        completeness -= min(25, len(volume_anomalies) * 15)
+    score.completeness_score = max(0, completeness)
 
-    score.total = score.price_score + score.ohlc_score + score.adj_score + score.completeness_score
+    # 计算总分
+    total = (
+        score.price_score +
+        score.ohlc_score +
+        score.adj_score +
+        score.completeness_score
+    )
+
+    # 严重异常直接扣总分，确保很低分
+    if serious_count >= 1:
+        total -= 60  # 严重异常直接扣60分
+    if serious_count >= 2:
+        total -= 20  # 多种严重异常叠加
+
+    score.total = max(0, total)
+
     return score
 ```
+
+**严重异常扣分策略**:
+
+| 异常类型 | 处理 | 说明 |
+|----------|------|------|
+| price_out_of_range | 该项归零 + 总分扣60 | 价格超范围严重影响数据可用性 |
+| ohlc_close_out / ohlc_low_gt_high | 该项归零 + 总分扣60 | OHLC关系错误数据不可用 |
+| adj_continuity_break / adj_factor_invalid | 该项归零 + 总分扣60 | 复权断裂影响价格连续性 |
+| volume_invalid | completeness_score 扣15/项 | 成交量异常属于完整性问题 |
 
 **异常处理策略**:
 
@@ -1216,5 +1269,5 @@ validate_fetch_result('2026-03-28')
 ---
 
 **文档版本**: v1.0
-**最后更新**: 2026-03-28
+**最后更新**: 2026-03-29
 **维护者**: bruce li
