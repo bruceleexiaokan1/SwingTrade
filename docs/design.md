@@ -661,15 +661,15 @@ def update_daily_index(conn, code: str, df: pd.DataFrame):
 
     conn.execute("""
         INSERT OR REPLACE INTO daily_index
-        (code, date, file_path, start_date, end_date, row_count, updated_at)
+        (code, latest_date, file_path, row_count, start_date, end_date, updated_at)
         VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
     """, [
         code,
-        date_range['max'],  # date 存最新日期
+        date_range['max'],  # latest_date
         f"raw/daily/{code}.parquet",
+        len(df),
         date_range['min'],
-        date_range['max'],
-        len(df)
+        date_range['max']
     ])
 ```
 

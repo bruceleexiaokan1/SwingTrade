@@ -110,11 +110,11 @@ class TestDailyFetcherIntegration:
         conn.execute("""
             CREATE TABLE IF NOT EXISTS daily_index (
                 code TEXT PRIMARY KEY,
-                date TEXT,
+                latest_date TEXT,
                 file_path TEXT,
+                row_count INTEGER,
                 start_date TEXT,
                 end_date TEXT,
-                row_count INTEGER,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
@@ -123,13 +123,12 @@ class TestDailyFetcherIntegration:
         conn.execute("""
             CREATE TABLE IF NOT EXISTS update_log (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                data_type TEXT,
+                data_type TEXT NOT NULL,
                 code TEXT,
-                update_date TEXT,
-                fetch_status TEXT,
-                write_status TEXT,
-                quality_score REAL,
-                source TEXT,
+                update_date TEXT NOT NULL,
+                status TEXT NOT NULL,
+                row_count INTEGER,
+                error_msg TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
@@ -367,7 +366,7 @@ class TestDailyFetcherIntegration:
         db_path = os.path.join(self.temp_dir, "sqlite", "market.db")
         conn = sqlite3.connect(db_path)
         index = conn.execute(
-            "SELECT code, date, start_date, end_date, row_count FROM daily_index"
+            "SELECT code, latest_date, start_date, end_date, row_count FROM daily_index"
         ).fetchone()
         conn.close()
 
