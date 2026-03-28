@@ -57,7 +57,7 @@ def merge_daily_with_adj_factor(
 
             # 如果第一个值就是 NaN，用 1.0 填充
             if pd.isna(df["adj_factor"].iloc[0]):
-                df["adj_factor"].iloc[0] = 1.0
+                df.loc[df.index[0], "adj_factor"] = 1.0
 
     # 计算后复权价格
     adj_factor = df["adj_factor"].values
