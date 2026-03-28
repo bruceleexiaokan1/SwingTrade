@@ -1,12 +1,13 @@
 """
 StockData 健康检查
 
-定时执行，检查数据采集状态，发送告警
+定时执行，检查数据采集状态，发送每日报告
 """
 
 import os
 import json
 import logging
+import shutil
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -20,11 +21,20 @@ logger = logging.getLogger(__name__)
 DEFAULT_THRESHOLDS = {
     'success_rate_error': 0.95,      # < 95% ERROR
     'success_rate_warning': 0.99,     # 95-99% WARNING
-    'alert_cooldown_hours': 24,
 }
 
 CHECKPOINT_FILE = "status/health_checkpoint.json"
 MAX_CODES_IN_EMAIL = 20
+
+
+@dataclass
+class StorageStats:
+    """存储统计"""
+    raw_daily_mb: float = 0
+    warm_mb: float = 0
+    sqlite_mb: float = 0
+    total_stocks: int = 0
+    quarantine_mb: float = 0
 
 
 @dataclass
@@ -55,6 +65,38 @@ def get_smtp_password() -> Optional[str]:
 def get_stockdata_root() -> str:
     """获取 StockData 根目录"""
     return os.getenv('STOCKDATA_ROOT', '/Users/bruce/workspace/trade/StockData')
+
+
+def get_storage_stats() -> StorageStats:
+    """获取存储统计"""
+    stockdata_root = Path(get_stockdata_root())
+    stats = StorageStats()
+
+    # raw/daily
+    raw_dir = stockdata_root / "raw" / "daily"
+    if raw_dir.exists():
+        total_bytes = sum(f.stat().st_size for f in raw_dir.glob("*.parquet"))
+        stats.raw_daily_mb = total_bytes / (1024 * 1024)
+        stats.total_stocks = len(list(raw_dir.glob("*.parquet")))
+
+    # warm
+    warm_dir = stockdata_root / "warm" / "daily_summary"
+    if warm_dir.exists():
+        total_bytes = sum(f.stat().st_size for f in warm_dir.glob("*.parquet"))
+        stats.warm_mb = total_bytes / (1024 * 1024)
+
+    # sqlite
+    sqlite_path = stockdata_root / "sqlite" / "market.db"
+    if sqlite_path.exists():
+        stats.sqlite_mb = sqlite_path.stat().st_size / (1024 * 1024)
+
+    # quarantine
+    q_dir = stockdata_root / "quarantine"
+    if q_dir.exists():
+        total_bytes = sum(f.stat().st_size for f in q_dir.rglob("*.parquet"))
+        stats.quarantine_mb = total_bytes / (1024 * 1024)
+
+    return stats
 
 
 def get_check_date() -> str:
@@ -138,7 +180,7 @@ def format_codes(codes: list, max_show: int = MAX_CODES_IN_EMAIL) -> str:
     return f"{shown}... (+{len(codes) - max_show}只)"
 
 
-def build_alert_email(alert: HealthAlert) -> tuple[str, str]:
+def build_alert_email(alert: HealthAlert, storage_stats: StorageStats = None) -> tuple[str, str]:
     """构建告警邮件"""
     stockdata_root = get_stockdata_root()
 
@@ -165,41 +207,67 @@ def build_alert_email(alert: HealthAlert) -> tuple[str, str]:
         f"成功率: {alert.success_rate:.1%} ({alert.success_count}/{alert.total_count})",
         f"采集时间: {alert.start_time} - {alert.end_time}",
         f"失败总数: {alert.total_failed}",
-        "",
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-        f"❌ 失败详情",
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
     ]
 
-    # 网络失败
-    if alert.network_failed:
-        body_lines.append(f"")
-        body_lines.append(f"【网络失败】{len(alert.network_failed)}只")
-        body_lines.append(f"  影响: {format_codes(alert.network_failed)}")
-        body_lines.append(f"  原因: 数据源响应超时")
-        body_lines.append(f"  建议: 检查网络或稍后重试")
+    # 存储统计
+    if storage_stats:
+        body_lines.extend([
+            "",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+            "💾 存储统计",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+            f"日线数据: {storage_stats.raw_daily_mb:.1f} MB ({storage_stats.total_stocks} 只股票)",
+            f"温数据汇总: {storage_stats.warm_mb:.1f} MB",
+            f"SQlite索引: {storage_stats.sqlite_mb:.1f} MB",
+            f"隔离数据: {storage_stats.quarantine_mb:.1f} MB",
+        ])
 
-    # 质量拒绝
-    if alert.quality_rejected:
-        body_lines.append(f"")
-        body_lines.append(f"【质量拒绝】{len(alert.quality_rejected)}只")
-        body_lines.append(f"  影响: {format_codes(alert.quality_rejected)}")
-        body_lines.append(f"  原因: 价格/OHLC异常被拒绝")
-        body_lines.append(f"  建议: 检查数据源数据质量")
+    # 失败详情（如果有）
+    if alert.total_failed > 0:
+        body_lines.extend([
+            "",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+            "❌ 失败详情",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+        ])
 
-    # 重试失败
-    if alert.retry_failed:
-        body_lines.append(f"")
-        body_lines.append(f"【重试失败】{len(alert.retry_failed)}只")
-        body_lines.append(f"  影响: {format_codes(alert.retry_failed)}")
-        body_lines.append(f"  原因: 多次重试后仍失败")
-        body_lines.append(f"  建议: 检查数据源状态")
+        # 网络失败
+        if alert.network_failed:
+            body_lines.extend([
+                "",
+                f"【网络失败】{len(alert.network_failed)}只",
+                f"  影响: {format_codes(alert.network_failed)}",
+                f"  原因: 数据源响应超时",
+                f"  建议: 检查网络或稍后重试",
+            ])
 
-    # 其他错误
-    if alert.other_failed:
-        body_lines.append(f"")
-        body_lines.append(f"【其他错误】{len(alert.other_failed)}只")
-        body_lines.append(f"  影响: {format_codes(alert.other_failed)}")
+        # 质量拒绝
+        if alert.quality_rejected:
+            body_lines.extend([
+                "",
+                f"【质量拒绝】{len(alert.quality_rejected)}只",
+                f"  影响: {format_codes(alert.quality_rejected)}",
+                f"  原因: 价格/OHLC异常被拒绝",
+                f"  建议: 检查数据源数据质量",
+            ])
+
+        # 重试失败
+        if alert.retry_failed:
+            body_lines.extend([
+                "",
+                f"【重试失败】{len(alert.retry_failed)}只",
+                f"  影响: {format_codes(alert.retry_failed)}",
+                f"  原因: 多次重试后仍失败",
+                f"  建议: 检查数据源状态",
+            ])
+
+        # 其他错误
+        if alert.other_failed:
+            body_lines.extend([
+                "",
+                f"【其他错误】{len(alert.other_failed)}只",
+                f"  影响: {format_codes(alert.other_failed)}",
+            ])
 
     # 后续动作
     body_lines.extend([
@@ -310,26 +378,35 @@ def run_health_check(date: str = None) -> bool:
 
     # 3. 加载日报
     report = load_report(date)
+    storage_stats = get_storage_stats()
     if report is None:
         # 日报不存在，发送 ERROR 告警
         subject = f"[StockData ERROR] {date} 采集未执行"
-        body = f"""❌ 采集日报不存在
-
-日期: {date}
-状态: ERROR - 日报文件不存在
-
-可能原因:
-1. 采集脚本未执行
-2. 采集脚本执行失败
-3. 日报文件路径错误
-
-建议:
-□ 检查 crontab 是否配置
-□ 检查采集日志
-□ 手动执行采集脚本
-
-Sent by StockData Health Checker | {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-"""
+        body_lines = [
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+            f"📊 StockData 采集日报 - {date}",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+            "",
+            "❌ 采集日报不存在",
+            "",
+            "可能原因:",
+            "1. 采集脚本未执行",
+            "2. 采集脚本执行失败",
+            "3. 日报文件路径错误",
+            "",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+            "💾 存储统计",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+            f"日线数据: {storage_stats.raw_daily_mb:.1f} MB ({storage_stats.total_stocks} 只股票)",
+            f"温数据汇总: {storage_stats.warm_mb:.1f} MB",
+            f"SQlite索引: {storage_stats.sqlite_mb:.1f} MB",
+            f"隔离数据: {storage_stats.quarantine_mb:.1f} MB",
+            "",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+            f"Sent by StockData Health Checker | {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+        ]
+        body = "\n".join(body_lines)
         if should_send_alert(date, "ERROR"):
             send_alert("ERROR", f"{date} 采集未执行", {"date": date})
             update_checkpoint(date, "ERROR")
@@ -342,24 +419,34 @@ Sent by StockData Health Checker | {datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     # 5. 计算告警级别
     alert.level = calculate_level(alert)
 
+    # 6. 获取存储统计
+    storage_stats = get_storage_stats()
+
+    # 7. 构建邮件
+    subject, body = build_alert_email(alert, storage_stats)
+
+    # 8. 发送告警（ERROR/WARNING 级别走冷却机制，INFO 级别每日必发）
     if alert.level == "INFO":
-        logger.info(f"采集正常: {date}, 成功率 {alert.success_rate:.1%}")
-        return False
+        # INFO 级别：每日报告，直接发送
+        send_alert(alert.level, f"{date} 采集日报", {
+            "success_rate": f"{alert.success_rate:.1%}",
+            "storage_raw_mb": f"{storage_stats.raw_daily_mb:.1f}",
+            "storage_warm_mb": f"{storage_stats.warm_mb:.1f}",
+            "storage_sqlite_mb": f"{storage_stats.sqlite_mb:.1f}",
+        })
+        logger.info(f"发送每日报告: {subject}")
+    else:
+        # ERROR/WARNING 级别：检查冷却期
+        if not should_send_alert(date, alert.level):
+            logger.info(f"告警在冷却期内，跳过: {date} {alert.level}")
+            return False
+        send_alert(alert.level, f"{date} 采集{alert.level}", {
+            "success_rate": f"{alert.success_rate:.1%}",
+            "failed_count": alert.total_failed,
+        })
+        update_checkpoint(date, alert.level)
+        logger.info(f"发送告警: {subject}")
 
-    # 6. 检查是否需要发送（去重）
-    if not should_send_alert(date, alert.level):
-        logger.info(f"告警在冷却期内，跳过: {date} {alert.level}")
-        return False
-
-    # 7. 发送告警
-    subject, body = build_alert_email(alert)
-    send_alert(alert.level, f"{date} 采集{alert.level}", {
-        "success_rate": f"{alert.success_rate:.1%}",
-        "failed_count": alert.total_failed,
-    })
-    update_checkpoint(date, alert.level)
-
-    logger.info(f"发送告警: {subject}")
     return True
 
 
