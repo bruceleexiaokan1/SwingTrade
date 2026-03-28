@@ -1,0 +1,21 @@
+# Data
+tushare
+akshare
+baostock
+
+# Core
+pandas
+numpy
+
+# Storage
+mysql-connector-python
+ sqlalchemy
+
+# Analysis
+jupyter
+matplotlib
+seaborn
+
+# ML (optional)
+# scikit-learn
+# statsmodels
