@@ -106,15 +106,15 @@ class TushareSource(DataSource):
             # 返回空 DataFrame 但不抛异常，这是正常情况（如停牌）
             return pd.DataFrame()
 
-        # 验证数据格式
-        df = self._validate_daily_dataframe(df, code)
-
-        # 字段映射
+        # 字段映射（Tushare原始列名 → 标准列名）
         df = df.rename(columns={
             "ts_code": "code",
             "trade_date": "date",
             "vol": "volume"
         })
+
+        # 验证数据格式（映射后的列名）
+        df = self._validate_daily_dataframe(df, code)
 
         # 转换日期格式
         df["date"] = pd.to_datetime(df["date"]).dt.strftime("%Y-%m-%d")
