@@ -2,16 +2,25 @@
 
 个人波段量化交易系统
 
+## 项目概述
+
+专注于A股波段交易的量化投资系统，支持数据采集、策略回测和实盘交易。
+
+## 技术栈
+
+- **数据源**: tushare、akshare、baostock
+- **核心库**: pandas、numpy
+- **存储**: MySQL + SQLAlchemy
+- **分析**: Jupyter、matplotlib、seaborn
+
 ## 项目结构
 
 ```
-trade/
-├── data/           # 数据存储
+SwingTrade/
 ├── src/            # 源代码
-├── config/         # 配置文件
-├── notebooks/      # 分析 notebook
 ├── tests/          # 测试
-└── docs/           # 文档
+├── requirements.txt
+└── README.md
 ```
 
 ## 开发进度
