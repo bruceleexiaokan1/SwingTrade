@@ -14,6 +14,7 @@ from typing import Optional
 import logging
 import time
 import shutil
+import fasteners
 
 logger = logging.getLogger(__name__)
 
@@ -51,10 +52,11 @@ class IdempotentWriter:
     def __init__(self, stockdata_root: str = None, db_path: str = None):
         self.stockdata_root = stockdata_root or get_stockdata_root()
         self.db_path = db_path or get_db_path()
+        self.LOCK_DIR = Path("/tmp/stockdata_locks")
 
     def write(self, code: str, df: pd.DataFrame) -> bool:
         """
-        幂等写入
+        幂等写入（线程安全，使用文件锁）
 
         Args:
             code: 股票代码
@@ -63,6 +65,16 @@ class IdempotentWriter:
         Returns:
             bool: 是否写入成功
         """
+        # 按股票前缀分区锁（sh/sz/bj）
+        lock_dir = self.LOCK_DIR / code[:2]
+        lock_dir.mkdir(parents=True, exist_ok=True)
+        lock_file = lock_dir / f"{code}.lock"
+
+        with fasteners.InterProcessLock(lock_file):
+            return self._write_inner(code, df)
+
+    def _write_inner(self, code: str, df: pd.DataFrame) -> bool:
+        """写入内部逻辑（在锁内执行）"""
         if df.empty:
             logger.warning(f"空数据，跳过: {code}")
             return False
@@ -166,7 +178,8 @@ class IdempotentWriter:
             ).fetchone()
             conn.close()
             return row[0] if row else None
-        except Exception:
+        except Exception as e:
+            logger.error(f"SQLite 查询失败 {code}: {e}")
             return None
 
     def _update_daily_index(self, code: str, df: pd.DataFrame):

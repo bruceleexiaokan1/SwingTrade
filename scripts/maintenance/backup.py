@@ -5,6 +5,7 @@ StockData 备份脚本
 """
 
 import os
+import sqlite3
 import shutil
 import logging
 from datetime import datetime, timedelta
@@ -80,7 +81,7 @@ def backup_raw_daily() -> bool:
 
 
 def backup_sqlite() -> bool:
-    """备份 SQLite 数据库"""
+    """备份 SQLite 数据库（使用 sqlite3.backup API 获取一致快照）"""
     stockdata_root = Path(get_stockdata_root())
     backup_root = Path(get_backup_root())
 
@@ -95,7 +96,12 @@ def backup_sqlite() -> bool:
     target = target_dir / "market.db"
 
     try:
-        shutil.copy2(source, target)
+        # 使用 sqlite3.backup API 获取一致快照（WAL 模式安全）
+        src_conn = sqlite3.connect(str(source), timeout=30)
+        dst_conn = sqlite3.connect(str(target), timeout=30)
+        src_conn.backup(dst_conn)
+        dst_conn.close()
+        src_conn.close()
         logger.info(f"SQLite 备份完成: {source} -> {target}")
         return True
     except Exception as e:

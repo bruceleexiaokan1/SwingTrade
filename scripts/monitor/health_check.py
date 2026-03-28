@@ -295,24 +295,30 @@ def should_send_alert(date: str, level: str) -> bool:
     stockdata_root = get_stockdata_root()
     checkpoint_path = Path(stockdata_root) / CHECKPOINT_FILE
 
-    # 读取检查点
+    # 读取检查点（保留历史）
     checkpoint = {}
+    last_alerts = {}
     if checkpoint_path.exists():
         try:
             with open(checkpoint_path, 'r') as f:
                 checkpoint = json.load(f)
-        except Exception:
-            pass
+            last_alerts = checkpoint.get('last_alerts', {})
+        except (json.JSONDecodeError, IOError) as e:
+            logger.warning(f"Checkpoint 读取失败，保持现有状态: {e}")
+            last_alerts = checkpoint.get('last_alerts', {})
 
-    # 检查是否在冷却期内
+    # 检查是否在冷却期内（24小时）
     key = f"{level}_{date}"
-    last_alert = checkpoint.get('last_alerts', {}).get(key)
+    last_alert = last_alerts.get(key)
 
     if last_alert:
-        last_time = datetime.fromisoformat(last_alert)
-        if datetime.now() - last_time < timedelta(hours=DEFAULT_THRESHOLDS['alert_cooldown_hours']):
-            logger.info(f"告警在冷却期内，跳过: {key}")
-            return False
+        try:
+            last_time = datetime.fromisoformat(last_alert)
+            if datetime.now() - last_time < timedelta(hours=24):
+                logger.info(f"告警在冷却期内，跳过: {key}")
+                return False
+        except ValueError:
+            pass  # 无效的时间格式，重新发送
 
     return True
 
@@ -327,8 +333,8 @@ def update_checkpoint(date: str, level: str):
         try:
             with open(checkpoint_path, 'r') as f:
                 checkpoint = json.load(f)
-        except Exception:
-            pass
+        except (json.JSONDecodeError, IOError) as e:
+            logger.warning(f"Checkpoint 读取失败，重建检查点: {e}")
 
     if 'last_alerts' not in checkpoint:
         checkpoint['last_alerts'] = {}

@@ -3,13 +3,17 @@ StockData 告警模块
 """
 
 import os
+import json
 import smtplib
 import logging
 from email.mime.text import MIMEText
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 logger = logging.getLogger(__name__)
+
+ALERT_FALLBACK_DIR = Path("logs/alerts")
 
 
 ALERT_CONFIG = {
@@ -76,7 +80,27 @@ def send_alert(level: str, message: str, details: dict = None):
 
     except Exception as e:
         logger.error(f"告警发送失败: {e}")
-        return False
+        return _write_alert_fallback(level, message, details, str(e))
+
+
+def _write_alert_fallback(level: str, message: str, details: dict, error: str) -> bool:
+    """告警失败时写入本地文件"""
+    ALERT_FALLBACK_DIR.mkdir(parents=True, exist_ok=True)
+    record = {
+        "time": datetime.now().isoformat(),
+        "level": level,
+        "message": message,
+        "details": details,
+        "error": error
+    }
+    fallback_file = ALERT_FALLBACK_DIR / "failed_alerts.jsonl"
+    try:
+        with open(fallback_file, 'a', encoding='utf-8') as f:
+            f.write(json.dumps(record, ensure_ascii=False) + '\n')
+        logger.warning(f"告警已写入回退文件: {fallback_file}")
+    except Exception as e:
+        logger.error(f"告警回退文件写入失败: {e}")
+    return False
 
 
 def send_test_alert():
