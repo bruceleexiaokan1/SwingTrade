@@ -56,7 +56,7 @@ quality_scoring:
   source_consistency:
     dual_source_match: 100      # 双源完全一致
     dual_source_within_tolerance: 95  # 双源差异在容差内
-    single_source: 85          # 单源，无从验证
+    single_source: 95          # 单源，Tushare 可靠给 95
     dual_source_mismatch: 50    # 双源差异超容差
 
   field_completeness:
