@@ -8,6 +8,7 @@ import os
 import json
 import logging
 import shutil
+import tempfile
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -324,9 +325,10 @@ def should_send_alert(date: str, level: str) -> bool:
 
 
 def update_checkpoint(date: str, level: str):
-    """更新检查点"""
+    """更新检查点（原子写入）"""
     stockdata_root = get_stockdata_root()
     checkpoint_path = Path(stockdata_root) / CHECKPOINT_FILE
+    checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
 
     checkpoint = {}
     if checkpoint_path.exists():
@@ -342,9 +344,21 @@ def update_checkpoint(date: str, level: str):
     key = f"{level}_{date}"
     checkpoint['last_alerts'][key] = datetime.now().isoformat()
 
-    checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(checkpoint_path, 'w') as f:
-        json.dump(checkpoint, f, indent=2)
+    # 原子写入：temp file + rename
+    temp_fd, temp_path_str = tempfile.mkstemp(
+        dir=checkpoint_path.parent,
+        prefix='.checkpoint_',
+        suffix='.tmp'
+    )
+    temp_path = Path(temp_path_str)
+    try:
+        with os.fdopen(temp_fd, 'w') as f:
+            json.dump(checkpoint, f, indent=2)
+        os.replace(str(temp_path), str(checkpoint_path))
+    except Exception:
+        if temp_path.exists():
+            temp_path.unlink()
+        raise
 
 
 def verify_smtp_config() -> bool:

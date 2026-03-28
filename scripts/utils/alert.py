@@ -7,13 +7,16 @@ import json
 import smtplib
 import logging
 from email.mime.text import MIMEText
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
 logger = logging.getLogger(__name__)
 
 ALERT_FALLBACK_DIR = Path("logs/alerts")
+MAX_FALLBACK_SIZE = 100 * 1024 * 1024  # 100MB
+MAX_ROTATED_FILES = 5                   # 保留最近5个
+ROTATION_RETENTION_DAYS = 7             # 保留7天
 
 
 ALERT_CONFIG = {
@@ -70,7 +73,7 @@ def send_alert(level: str, message: str, details: dict = None):
         msg['From'] = ALERT_CONFIG['from_addr']
         msg['To'] = ','.join(ALERT_CONFIG['to_addrs'])
 
-        with smtplib.SMTP(ALERT_CONFIG['smtp_host'], ALERT_CONFIG['smtp_port']) as server:
+        with smtplib.SMTP(ALERT_CONFIG['smtp_host'], ALERT_CONFIG['smtp_port'], timeout=10) as server:
             server.starttls()
             server.login(ALERT_CONFIG['smtp_user'], password)
             server.send_message(msg)
@@ -83,9 +86,46 @@ def send_alert(level: str, message: str, details: dict = None):
         return _write_alert_fallback(level, message, details, str(e))
 
 
+def _rotate_fallback_file_if_needed():
+    """检查文件大小，必要时轮转"""
+    fallback_file = ALERT_FALLBACK_DIR / "failed_alerts.jsonl"
+    if not fallback_file.exists():
+        return
+    if fallback_file.stat().st_size < MAX_FALLBACK_SIZE:
+        return
+
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    rotated_name = f"failed_alerts_{timestamp}.jsonl"
+    rotated_file = ALERT_FALLBACK_DIR / rotated_name
+    fallback_file.rename(rotated_file)
+    logger.info(f"告警文件已轮转: {rotated_file}")
+    _cleanup_rotated_files()
+
+
+def _cleanup_rotated_files():
+    """清理过期和超量轮转文件"""
+    if not ALERT_FALLBACK_DIR.exists():
+        return
+    cutoff = datetime.now() - timedelta(days=ROTATION_RETENTION_DAYS)
+    rotated = sorted(
+        ALERT_FALLBACK_DIR.glob("failed_alerts_[0-9]*.jsonl"),
+        key=lambda f: f.stat().st_mtime,
+        reverse=True
+    )
+    for f in rotated:
+        if datetime.fromtimestamp(f.stat().st_mtime) < cutoff:
+            f.unlink()
+            logger.info(f"删除过期文件: {f}")
+    for f in rotated[MAX_ROTATED_FILES:]:
+        f.unlink()
+        logger.info(f"删除超量文件: {f}")
+
+
 def _write_alert_fallback(level: str, message: str, details: dict, error: str) -> bool:
-    """告警失败时写入本地文件"""
+    """告警失败时写入本地文件（带轮转）"""
     ALERT_FALLBACK_DIR.mkdir(parents=True, exist_ok=True)
+    _rotate_fallback_file_if_needed()
+
     record = {
         "time": datetime.now().isoformat(),
         "level": level,

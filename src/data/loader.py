@@ -16,6 +16,13 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
+def _get_db_connection(db_path: Path) -> sqlite3.Connection:
+    """获取配置了超时和 busy_timeout 的数据库连接"""
+    conn = sqlite3.connect(str(db_path), timeout=30)
+    conn.execute('PRAGMA busy_timeout=30000')
+    return conn
+
+
 class CoreStockLoader:
     """
     核心股票池加载器
@@ -76,7 +83,7 @@ class CoreStockLoader:
             from init_db import init_database
             init_database(str(self.db_path))
 
-        conn = sqlite3.connect(str(self.db_path))
+        conn = _get_db_connection(self.db_path)
         conn.execute('PRAGMA journal_mode=WAL')
 
         rows_affected = 0
@@ -126,7 +133,7 @@ class CoreStockLoader:
         if not self.db_path.exists():
             return 0
 
-        conn = sqlite3.connect(str(self.db_path))
+        conn = _get_db_connection(self.db_path)
         count = conn.execute(
             "SELECT COUNT(*) FROM stocks WHERE is_active = 1"
         ).fetchone()[0]
@@ -234,7 +241,7 @@ class StockDataLoader:
         if not self.db_path.exists():
             return {}
 
-        conn = sqlite3.connect(str(self.db_path))
+        conn = _get_db_connection(self.db_path)
         try:
             row = conn.execute(
                 "SELECT * FROM latest_quote WHERE code = ?",
@@ -329,7 +336,7 @@ class StockDataLoader:
         if not self.db_path.exists():
             return {}
 
-        conn = sqlite3.connect(str(self.db_path))
+        conn = _get_db_connection(self.db_path)
         try:
             row = conn.execute(
                 "SELECT * FROM stocks WHERE code = ?",

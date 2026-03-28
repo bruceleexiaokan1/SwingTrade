@@ -39,6 +39,13 @@ def get_db_path() -> str:
     return os.path.join(get_stockdata_root(), 'sqlite', 'market.db')
 
 
+def _get_db_connection(timeout: float = 30.0) -> sqlite3.Connection:
+    """获取配置了超时和 busy_timeout 的数据库连接"""
+    conn = sqlite3.connect(get_db_path(), timeout=timeout)
+    conn.execute('PRAGMA busy_timeout=30000')
+    return conn
+
+
 class IdempotentWriter:
     """
     幂等写入器
@@ -171,7 +178,7 @@ class IdempotentWriter:
     def _get_latest_date(self, code: str) -> Optional[str]:
         """获取已存在的最新日期"""
         try:
-            conn = sqlite3.connect(self.db_path)
+            conn = _get_db_connection()
             row = conn.execute(
                 "SELECT latest_date FROM daily_index WHERE code = ?",
                 [code]
@@ -184,7 +191,7 @@ class IdempotentWriter:
 
     def _update_daily_index(self, code: str, df: pd.DataFrame):
         """更新日线索引"""
-        conn = sqlite3.connect(self.db_path)
+        conn = _get_db_connection()
         try:
             conn.execute('PRAGMA journal_mode=WAL')
 
@@ -211,7 +218,7 @@ class IdempotentWriter:
         """更新检查点"""
         date_str = date.strftime('%Y-%m-%d') if hasattr(date, 'strftime') else str(date)
 
-        conn = sqlite3.connect(self.db_path)
+        conn = _get_db_connection()
         try:
             conn.execute("""
                 INSERT OR REPLACE INTO checkpoints (key, value, updated_at)
