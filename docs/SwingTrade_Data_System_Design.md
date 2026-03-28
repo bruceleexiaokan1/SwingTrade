@@ -840,9 +840,21 @@ python -m src.data.fetcher.backfill \
 
 ---
 
-**文档版本**: v1.7
+### 18.4 Schema 一致性修复（2026-03-29）
+
+| 问题 | 影响 | 修复 |
+|------|------|------|
+| fetch_daily.py daily_index 列名错误 | 索引更新失败 | `date` → `latest_date` |
+| fetch_daily.py update_log 列名错误 | 日志记录失败 | `fetch_status` 等 → `status, row_count, error_msg` |
+
+**验证**：179 个测试通过
+
+---
+
+**文档版本**: v1.8
 **最后更新**: 2026-03-29
 **更新内容**:
+- v1.8: Schema 一致性修复（fetch_daily.py 列名与 init_db.py 同步），179测试通过
 - v1.7: P0 稳定性修复 v2（SMTP超时、回退轮转、SQLite timeout、checkpoint原子），177测试通过
 - v1.6: P0 稳定性修复（文件锁、告警回退、SQLite备份、错误日志），152测试通过
 - v1.5: 扩大股票池至40只，新增IndexFetcher（6个宽基指数），置信度100%验证通过
