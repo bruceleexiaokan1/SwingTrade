@@ -13,17 +13,17 @@ logger = logging.getLogger(__name__)
 
 
 ALERT_CONFIG = {
-    'smtp_host': 'smtp.qq.com',
-    'smtp_port': 587,
-    'smtp_user': 'bruceleexiaokan@qq.com',
-    'from_addr': 'bruceleexiaokan@qq.com',
-    'to_addrs': ['bruceleexiaokan@qq.com'],
+    'smtp_host': os.getenv('EMAIL_SMTP_HOST', 'smtp.qq.com'),
+    'smtp_port': int(os.getenv('EMAIL_SMTP_PORT', 587)),
+    'smtp_user': os.getenv('EMAIL_USERNAME', 'bruceleexiaokan@qq.com'),
+    'from_addr': os.getenv('EMAIL_USERNAME', 'bruceleexiaokan@qq.com'),
+    'to_addrs': [os.getenv('EMAIL_TO', 'bruceleexiaokan@qq.com')],
 }
 
 
 def get_smtp_password() -> Optional[str]:
     """从环境变量获取 SMTP 密码"""
-    return os.getenv('SMTP_PASSWORD')
+    return os.getenv('EMAIL_PASSWORD')
 
 
 def send_alert(level: str, message: str, details: dict = None):
