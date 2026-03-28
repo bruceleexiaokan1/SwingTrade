@@ -144,8 +144,8 @@ class QualityScorer:
         - 双源差异超容差：50
         """
         if verify_record is None:
-            # 单源，无从验证，根据配置给 85
-            return 85.0
+            # 单源，Tushare 可靠但不是100%，给 95
+            return 95.0
 
         # 获取收盘价
         close = record.get("close")

@@ -31,7 +31,7 @@ class TestQualityScorer:
         score = self.scorer.score(record)
 
         assert isinstance(score, QualityScore)
-        assert score.source_consistency == 85.0  # 单源
+        assert score.source_consistency == 95.0  # 单源，Tushare 可靠给 95
         assert score.field_completeness == 100.0  # 全部字段
         assert score.range_validity == 100.0     # 范围正常
         assert score.historical_anomaly == 100.0  # 无历史数据
