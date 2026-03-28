@@ -38,7 +38,79 @@ halt_detection:
 
 cross_source_validation:
   enabled: true
-  # 与 BaoStock 交叉验证的字段
+  # 与 AkShare 交叉验证的字段
   compare_fields: [open, high, low, close, volume]
   # 允许的最大差异（百分比）
-  max_diff_pct: 0.01
+  max_diff_pct: 0.01  # 1%
+
+# Quality Scoring Configuration
+quality_scoring:
+  # 质量分各维度权重
+  weights:
+    source_consistency: 0.30
+    field_completeness: 0.20
+    range_validity: 0.30
+    historical_anomaly: 0.20
+
+  # 各维度分数映射
+  source_consistency:
+    dual_source_match: 100      # 双源完全一致
+    dual_source_within_tolerance: 95  # 双源差异在容差内
+    single_source: 85          # 单源，无从验证
+    dual_source_mismatch: 50    # 双源差异超容差
+
+  field_completeness:
+    all_fields_present: 100
+    missing_penalty_per_field: 10  # 每缺失一个字段扣10分
+
+  range_validity:
+    all_fields_valid: 100
+    invalid_penalty_per_field: 20  # 每超范围一个字段扣20分
+
+  historical_anomaly:
+    within_limit: 100           # 在涨跌停范围内
+    exceed_limit: 30           # 超出涨跌停范围
+
+  # 质量分阈值
+  thresholds:
+    write_immediately: 80       # >= 80 分直接写入
+    need_verification: 60       # 60-80 分触发 AkShare 验证
+    reject_and_alert: 0         # < 60 分拒绝写入，告警
+
+# Stock List Validation
+stock_validation:
+  # 代码格式：必须是6位数字
+  code_pattern: "^\\d{6}$"
+
+  # 市场前缀映射
+  market_prefixes:
+    sh: ["600", "601", "603", "605", "688", "689", "500", "510", "150", "159", "560", "508"]
+    sz: ["000", "001", "002", "003", "300", "150", "159", "560"]
+    bj: ["830", "870", "889", "430"]
+
+  # 名称验证
+  name:
+    min_length: 2
+    max_length: 20
+    reject_invisible_chars: true
+    reject_numeric_only: true
+
+# Fetch Configuration
+fetch:
+  # 采集窗口
+  window:
+    start: "16:00"            # 16:00 开始
+    end: "17:30"              # 17:30 结束
+    buffer_minutes: 30         # 收盘后缓冲时间
+
+  # 重试策略
+  retry:
+    max_attempts: 2           # 最多重试2次
+    immediate_delay_seconds: 0 # 立即重试（处理抖动）
+    secondary_delay_seconds: 30 # 30秒后重试（给数据源恢复时间）
+
+  # 告警阈值
+  alert:
+    success_rate_error: 0.95   # 成功率 < 95% 告警
+    success_rate_warning: 0.99  # 成功率 < 99% 警告
+    consecutive_fail_threshold: 3  # 连续3天失败触发告警
