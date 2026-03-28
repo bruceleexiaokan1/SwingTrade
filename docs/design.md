@@ -1,7 +1,7 @@
 # StockData 数据存储方案
 
-**版本**: v1.0
-**状态**: 设计完成，待审批
+**版本**: v1.1
+**状态**: 设计完成，已审批
 **置信度**: 100%
 
 ---
@@ -295,56 +295,93 @@ conn.execute('PRAGMA busy_timeout=30000')  # 30s
 
 ## 五、写入架构
 
-### 5.1 单写入器模式
+### 5.1 幂等写入 + 重试机制
 
-**原则**: 所有写操作必须通过单一写入器，禁止并发写
+**原则**: 无状态设计，基于幂等性保证安全，支持崩溃恢复
 
+**架构**:
 ```
-┌─────────────────────────────────────────────────────┐
-│                  写入请求队列                        │
-│  (线程安全队列，采集进程产生写入任务)                │
-└─────────────────────┬───────────────────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────────────────┐
-│              单写入器服务 (Writer)                   │
-│  1. 从队列取出任务                                    │
-│  2. 数据校验                                          │
-│  3. 写入临时文件                                      │
-│  4. 原子替换                                          │
-│  5. 更新 SQLite 索引                                  │
-│  6. 记录日志                                          │
-└─────────────────────────────────────────────────────┘
+[采集进程] ──► [直接调用写入] ──► [SQLite/Parquet]
+                    │
+                    └── [失败则重试，指数退避]
 ```
+
+**为什么选择此方案**:
+
+| 考量 | 分析 |
+|------|------|
+| 数据量 | 日线数据量小（每天几十MB），实时性要求不高 |
+| 复杂度 | 无状态方案最简单，维护成本低 |
+| 可靠性 | 幂等设计+重试机制已足够 |
+| 崩溃恢复 | 读取检查点，从检查点日期重新采集 |
 
 **写入流程** (以日线为例):
 ```python
-def write_daily(code: str, df: pd.DataFrame):
-    """日线数据写入流程"""
+class IdempotentWriter:
+    """幂等写入器 - 无需队列"""
 
-    # Step 1: 数据校验
-    if not validate_daily(df):
-        raise DataQualityError(f"数据校验失败: {code}")
+    def write(self, code: str, df: pd.DataFrame, date: str):
+        """写入日线数据"""
 
-    # Step 2: 准备临时文件
-    temp_file = f"raw/daily/{code}_{datetime.now().strftime('%Y%m%d%H%M%S')}.tmp.parquet"
+        # Step 1: 幂等检查 - 基于 (code, date) 判断是否已存在
+        existing = self.get_latest_date(code)
+        if existing and date <= existing:
+            logger.info(f"数据已存在或更旧，跳过: {code}, {date}")
+            return
 
-    # Step 3: 写入临时文件
-    df.to_parquet(temp_file, engine='pyarrow', compression='snappy')
+        # Step 2: 数据质量评估
+        score = calculate_quality_score(df)
+        if score.total < 50:
+            logger.error(f"数据质量过低: {score.total}分，隔离: {code}")
+            save_to_quarantine(df, code)
+            return
 
-    # Step 4: 原子替换
-    target_file = f"raw/daily/{code}.parquet"
-    os.replace(temp_file, target_file)  # 原子操作
+        # Step 3: 执行写入（原子操作）
+        try:
+            self._write_atomic(code, df)
+        except Exception as e:
+            # Step 4: 失败则重试（最多3次，指数退避）
+            for i in range(3):
+                time.sleep(2 ** i)  # 指数退避: 1s, 2s, 4s
+                try:
+                    self._write_atomic(code, df)
+                    break
+                except Exception as e2:
+                    logger.error(f"重试 {i+1} 失败: {code}, {e2}")
+            else:
+                # 3次都失败，抛出异常
+                raise WriteError(f"写入失败: {code}")
 
-    # Step 5: 更新 SQLite 索引（事务内）
-    with sqlite_transaction('market.db') as conn:
-        update_daily_index(conn, code, df)
+        # Step 5: 更新检查点
+        self.update_checkpoint(code, date)
 
-    # Step 6: 更新检查点
-    update_checkpoint('daily_last_update', datetime.now().isoformat())
+        # Step 6: 质量分触发告警
+        if score.total < 80:
+            send_alert("WARNING", f"数据质量可疑: {score.total}分", code)
 
-    # Step 7: 记录日志
-    logger.info(f"写入成功: {code}, {len(df)} 行")
+    def _write_atomic(self, code: str, df: pd.DataFrame):
+        """原子写入"""
+        # 准备临时文件
+        temp_file = f"raw/daily/{code}_{datetime.now().strftime('%Y%m%d%H%M%S')}.tmp.parquet"
+
+        # 写入临时文件
+        df.to_parquet(temp_file, engine='pyarrow', compression='snappy')
+
+        # 原子替换
+        target_file = f"raw/daily/{code}.parquet"
+        os.replace(temp_file, target_file)
+
+        # 更新 SQLite 索引（事务内）
+        with sqlite_transaction('market.db') as conn:
+            update_daily_index(conn, code, df)
+```
+
+**崩溃恢复**:
+```
+每日启动时：
+1. 读取检查点 (checkpoints 表)
+2. 对于每个 data_type，重新从检查点日期开始采集
+3. 幂等写入保证不重复
 ```
 
 ### 5.2 数据校验规则
@@ -372,30 +409,173 @@ halt_detection:
   consecutive_halt_days_threshold: 60  # 超过60天停牌标记为异常
 ```
 
-### 5.3 幂等写入
+### 5.3 数据质量评分
+
+**核心原则**: 异常发生，给很低的质量分
+
+**评分体系**:
+
+| 分数 | 等级 | 含义 | 处理方式 |
+|------|------|------|---------|
+| 100 | 完美 | 所有校验通过 | 直接使用 |
+| 80-99 | 良好 | 轻微异常（如小波动） | 使用，标记 |
+| 50-79 | 可疑 | 中度异常（如小幅断裂） | 降级使用，告警 |
+| 1-49 | 危险 | 严重异常（如大幅断裂） | 隔离，人工审查 |
+| 0 | 废弃 | 完全不可用 | 不使用 |
+
+**评分计算**:
 
 ```python
-def write_daily_idempotent(code: str, df: pd.DataFrame, date: str):
-    """幂等写入：基于 (code, date) 去重"""
+@dataclass
+class QualityScore:
+    """数据质量评分"""
+    total: float = 100.0
+    price_score: float = 25.0      # 价格质量
+    ohlc_score: float = 25.0       # OHLC质量
+    adj_score: float = 25.0         # 复权连续性
+    completeness_score: float = 25.0 # 完整性
 
-    # 读取已存在的日期
-    existing_dates = get_existing_dates(code)  # 从 SQLite 索引查询
+    @property
+    def grade(self) -> str:
+        if self.total >= 100: return "完美"
+        if self.total >= 80: return "良好"
+        if self.total >= 50: return "可疑"
+        if self.total >= 1: return "危险"
+        return "废弃"
 
-    # 过滤已存在的日期
-    new_df = df[~df['date'].isin(existing_dates)]
+    @property
+    def usable(self) -> bool:
+        return self.total >= 50
 
-    if len(new_df) == 0:
-        logger.info(f"数据已存在，跳过: {code}")
-        return
 
-    # 追加写入（与现有 Parquet 合并）
-    existing_df = pd.read_parquet(f"raw/daily/{code}.parquet")
-    merged_df = pd.concat([existing_df, new_df]).drop_duplicates(['date'])
-    merged_df = merged_df.sort_values('date')
+def calculate_quality_score(df: pd.DataFrame, anomalies: list) -> QualityScore:
+    """计算数据质量评分"""
+    score = QualityScore()
 
-    # 执行写入
-    write_daily(code, merged_df)
+    # 1. 价格合理性 (满分25)
+    price_anomalies = [a for a in anomalies if 'price' in a.get('reason', '')]
+    if price_anomalies:
+        score.price_score = max(0, 25 - len(price_anomalies) * 10)
+
+    # 2. OHLC关系 (满分25)
+    ohlc_anomalies = [a for a in anomalies if 'ohlc' in a.get('reason', '')]
+    if ohlc_anomalies:
+        score.ohlc_score = max(0, 25 - len(ohlc_anomalies) * 15)
+
+    # 3. 复权连续性 (满分25) - 核心指标，断裂直接扣20/处
+    adj_anomalies = [a for a in anomalies if 'adj' in a.get('reason', '')]
+    if adj_anomalies:
+        score.adj_score = max(0, 25 - len(adj_anomalies) * 20)
+
+    # 4. 完整性 (满分25)
+    missing_rows = df.isnull().sum().sum()
+    if missing_rows > 0:
+        score.completeness_score = max(0, 25 - missing_rows * 5)
+
+    score.total = score.price_score + score.ohlc_score + score.adj_score + score.completeness_score
+    return score
 ```
+
+**异常处理策略**:
+
+| 分数范围 | 处理方式 | 告警 |
+|----------|---------|------|
+| ≥ 80 | 直接使用 | 否 |
+| 50-79 | 降级使用 | 是 |
+| < 50 | 隔离待审 | 是 |
+
+**与知识库的整合**:
+
+```
+知识库三原则 → 质量评分映射：
+
+1. 复权 → 保证价格连续性
+   → adj_score，复权断裂给极低分
+
+2. 标准化 → 让指标跨标的可比
+   → completeness_score，数据完整是标准化的基础
+
+3. 位移 → 杜绝未来函数
+   → price_score，价格合理性校验
+```
+
+### 5.4 Schema 演进
+
+**原则**: 支持未来字段修改和扩展，完全兼容
+
+**元数据嵌入版本**:
+
+```python
+def write_parquet_with_metadata(df: pd.DataFrame, path: str, schema_version: str):
+    """写入 Parquet 并嵌入版本元数据"""
+    metadata = {
+        'schema_version': schema_version,
+        'created_at': datetime.now().isoformat(),
+        'field_count': str(len(df.columns))
+    }
+    table = pa.Table.from_pandas(df)
+    pq.write_table(table, path, metadata=metadata)
+
+
+def read_parquet_with_version(path: str) -> tuple:
+    """读取 Parquet，自动检测并迁移版本"""
+    schema = pq.read_schema(path)
+    current_version = schema.metadata.get(b'schema_version', b'v1').decode()
+    df = pq.read_table(path).to_pandas()
+
+    if current_version != SCHEMA_VERSION:
+        df = migrate_schema(df, current_version, SCHEMA_VERSION)
+
+    return df, current_version
+```
+
+**Schema 注册表与迁移链**:
+
+```python
+class SchemaMigrator:
+    """Schema 迁移管理器"""
+
+    SCHEMA_VERSION = 'v3'  # 当前版本
+
+    MIGRATIONS = {
+        ('v1', 'v2'): lambda df: df.assign(
+            amount=None, turnover=None, adj_factor=None
+        ),
+        ('v2', 'v3'): lambda df: df.assign(
+            pct_chg=None, is_halt=False
+        ),
+    }
+
+    @classmethod
+    def migrate(cls, df: pd.DataFrame, from_ver: str, to_ver: str) -> pd.DataFrame:
+        """执行版本迁移（支持多步迁移 v1→v2→v3）"""
+        current = from_ver
+        while current != to_ver:
+            next_ver = cls.get_next_version(current)
+            migration = cls.MIGRATIONS.get((current, next_ver))
+            if migration is None:
+                raise ValueError(f"缺少迁移路径: {current} → {next_ver}")
+            df = migration(df)
+            current = next_ver
+        return df
+```
+
+**迁移触发时机**:
+
+| 时机 | 触发条件 | 说明 |
+|------|---------|------|
+| 读取时 | 检测到旧版本 | 自动迁移，不阻塞 |
+| 归档时 | warm → cold | 批量迁移 |
+| 主动触发 | 运维命令 | 批量迁移所有文件 |
+
+**扩展能力**:
+
+| 操作 | 支持 | 说明 |
+|------|------|------|
+| 新增字段 | ✅ | Arrow 自动填充 null |
+| 删除字段 | ✅ | Arrow 忽略多余字段 |
+| 字段重命名 | ✅ | 需要显式迁移 |
+| 类型变更 | ✅ | 需要迁移函数 |
 
 ---
 
