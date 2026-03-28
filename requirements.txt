@@ -21,3 +21,4 @@ pytest-cov>=4.0.0
 
 # Utilities
 pathlib2>=2.3.0
+fasteners>=0.20
