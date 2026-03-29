@@ -1192,10 +1192,176 @@ validate_fetch_result('2026-03-28')
 ```
 
 **验收标准**:
-- [ ] 所有单元测试通过
-- [ ] 集成测试通过
-- [ ] 数据质量校验通过
-- [ ] 端到端流程验证成功
+- [x] 所有单元测试通过
+- [x] 集成测试通过
+- [x] 数据质量校验通过
+- [x] 端到端流程验证成功
+
+---
+
+### Phase 7: 技术指标模块 ✓
+
+**完成时间**: 2026-03-29
+
+**模块结构**:
+```
+src/data/indicators/
+├── __init__.py      # 模块导出
+├── ma.py            # 移动平均线 (MA5/10/20/60)
+├── macd.py          # MACD (12/26/9)
+├── rsi.py           # RSI (6/14)
+├── bollinger.py     # 布林带 (20/2)
+├── atr.py           # ATR (14)
+├── volume.py        # 成交量均线 (20)
+└── signals.py       # SwingSignals 波段信号检测器
+```
+
+**核心功能**:
+- `calculate_ma()` - 移动平均线计算
+- `golden_cross()` / `death_cross()` - 金叉死叉检测
+- `calculate_macd()` - MACD 指标计算
+- `calculate_rsi()` - RSI 指标计算
+- `calculate_bollinger()` - 布林带计算
+- `calculate_atr()` - ATR 指标计算
+- `SwingSignals.analyze()` - 综合信号分析（三屏系统）
+
+**三屏系统**:
+1. 方向（趋势）: MA20/MA60, MACD 零轴
+2. 时机（信号）: RSI, 布林带
+3. 确认（量价）: 成交量
+
+**验收标准**:
+- [x] 27 个单元测试全部通过
+- [x] 40 只股票回归测试通过
+- [x] RSI 范围 0~100
+- [x] 布林带上轨≥中轨≥下轨
+- [x] ATR 所有值 > 0
+
+---
+
+### Phase 8: 回测框架 ✓
+
+**完成时间**: 2026-03-29
+
+**模块结构**:
+```
+src/backtest/
+├── __init__.py      # 模块导出
+├── models.py        # 数据模型 (Trade, Position, BacktestResult)
+├── matching.py      # 撮合引擎 (T+1开盘价, 滑点, 涨跌停)
+├── engine.py        # SwingBacktester 回测引擎
+├── performance.py   # 绩效分析 (夏普, 最大回撤, 胜率)
+└── reporter.py      # HTML 报告生成
+```
+
+**核心功能**:
+- `OrderMatcher.match_buy/sell()` - T+1 撮合
+- `SwingBacktester.run()` - 完整回测执行
+- `PerformanceAnalyzer.analyze()` - 绩效指标计算
+- `BacktestReporter.generate_html()` - HTML 报告
+
+**风险/仓位参数** (Phase X 实现):
+| 参数 | 默认值 | 说明 | 实现位置 |
+|------|--------|------|----------|
+| trial_position_pct | 0.10 | 试探仓位比例（首笔建仓使用10%资金） | engine.py |
+| max_single_loss_pct | 0.02 | 单笔最大亏损限制（单笔亏损不超过总资金的2%） | engine.py |
+| min_profit_loss_ratio | 1.5 | 最小盈亏比要求（预期盈利/预期亏损） | engine.py |
+| max_open_positions | 5 | 最大同时持仓数 | engine.py |
+| atr_circuit_breaker | 3.0 | ATR熔断倍数（当前ATR超过入场时3倍时禁止开仓） | engine.py |
+
+**绩效指标**:
+| 指标 | 标准 | 计算公式 |
+|------|------|---------|
+| 夏普比率 | > 1.5 | (年化收益-无风险利率)/年化波动率 |
+| 最大回撤 | < 20% | max(peak-value)/peak |
+| 卡玛比率 | > 2.0 | 年化收益/最大回撤 |
+| 盈亏比 | > 1.5 | 总盈利/总亏损 |
+| 胜率 | 40-60% | 盈利交易/总交易 |
+
+**验收标准**:
+- [x] 20 个单元测试全部通过
+- [x] 40 只股票回测通过
+- [x] HTML 报告生成成功
+- [x] 夏普比率/最大回撤计算正确
+
+---
+
+### Phase 9: 策略参数配置与优化 ✓
+
+**完成时间**: 2026-03-29
+
+**模块结构**:
+```
+src/backtest/
+├── strategy_params.py   # 策略参数定义
+├── optimizer.py          # 参数优化器（网格搜索）
+└── portfolio.py         # 多策略组合管理
+```
+
+**核心功能**:
+- `StrategyParams` - 集中管理所有策略参数（指标、入场、出场、风控）
+- `ParameterOptimizer.grid_search()` - 网格搜索最优参数
+- `StrategyPortfolio` - 多策略组合管理（等权/风险平价/动量分配）
+
+**策略参数** (StrategyParams):
+| 参数类别 | 参数 | 默认值 |
+|----------|------|--------|
+| 指标 | ma_short, ma_long | 20, 60 |
+| 指标 | macd_fast, macd_slow, macd_signal | 12, 26, 9 |
+| 指标 | rsi_period, rsi_oversold, rsi_overbought | 14, 35, 80 |
+| 指标 | bollinger_period, bollinger_std | 20, 2.0 |
+| 指标 | atr_period, volume_period | 14, 20 |
+| 入场 | entry_confidence_threshold, min_profit_loss_ratio | 0.5, 1.5 |
+| 出场 | atr_stop_multiplier, atr_trailing_multiplier, profit_target_multiplier | 2.0, 3.0, 3.0 |
+| 风控 | trial_position_pct, max_single_loss_pct | 10%, 2% |
+| 风控 | max_open_positions, atr_circuit_breaker | 5, 3.0 |
+
+**关键特性**:
+1. **动态均线周期**: MA短期/长期参数化，支持10/30、20/60等多种配置
+2. **向后兼容**: 不传StrategyParams时使用原有硬编码默认值
+3. **并行优化**: ParameterOptimizer支持多线程网格搜索
+
+**使用示例**:
+
+```python
+# 方式1: 使用 StrategyParams
+params = StrategyParams(
+    ma_short=20,
+    ma_long=60,
+    rsi_oversold=35,
+    atr_stop_multiplier=2.0,
+)
+bt = SwingBacktester(strategy_params=params)
+result = bt.run(stock_codes=['600519'], start_date='2024-01-01', end_date='2025-12-31')
+
+# 方式2: 使用预设
+params = StrategyParams.aggressive()  # 激进（短线）
+params = StrategyParams.conservative()  # 保守（长线）
+
+# 网格搜索优化
+optimizer = ParameterOptimizer(backtest_fn=run_backtest)
+result = optimizer.grid_search(
+    param_grid={"ma_short": [10, 20], "ma_long": [30, 60]},
+    metric="sharpe_ratio"
+)
+
+# 多策略组合
+portfolio = create_portfolio([
+    {"ma_short": 10, "ma_long": 30},
+    {"ma_short": 20, "ma_long": 60},
+])
+portfolio.allocate("equal")  # 等权分配
+```
+
+**验收标准**:
+- [x] StrategyParams 可配置所有参数
+- [x] SwingSignals 接收 StrategyParams（动态MA周期）
+- [x] SwingBacktester 接收 StrategyParams
+- [x] ParameterOptimizer 支持网格搜索
+- [x] StrategyPortfolio 支持多策略组合
+- [x] 250 个单元测试全部通过
+- [x] 向后兼容（不传 StrategyParams 使用默认行为）
+- [x] 网格搜索优化验证通过
 
 ---
 
@@ -1268,6 +1434,6 @@ validate_fetch_result('2026-03-28')
 
 ---
 
-**文档版本**: v1.0
+**文档版本**: v1.1
 **最后更新**: 2026-03-29
 **维护者**: bruce li

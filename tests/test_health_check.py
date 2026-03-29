@@ -190,3 +190,145 @@ class TestShouldSendAlert:
         monkeypatch.setenv("STOCKDATA_ROOT", str(stockdata_root))
 
         assert should_send_alert("2026-03-29", "INFO") is False
+
+    def test_error_sends_first_time(self, tmp_path, monkeypatch):
+        """ERROR 级别首次发送"""
+        stockdata_root = tmp_path / "stockdata"
+        stockdata_root.mkdir()
+        monkeypatch.setenv("STOCKDATA_ROOT", str(stockdata_root))
+
+        assert should_send_alert("2026-03-29", "ERROR") is True
+
+    def test_error_skips_within_cooldown(self, tmp_path, monkeypatch):
+        """ERROR 级别在冷却期内跳过"""
+        stockdata_root = tmp_path / "stockdata"
+        stockdata_root.mkdir()
+        monkeypatch.setenv("STOCKDATA_ROOT", str(stockdata_root))
+
+        # 第一次发送
+        assert should_send_alert("2026-03-29", "ERROR") is True
+
+        # 模拟最近发送过（修改 checkpoint）
+        checkpoint_file = stockdata_root / "status" / "health_checkpoint.json"
+        checkpoint_file.parent.mkdir(parents=True, exist_ok=True)
+        with open(checkpoint_file, 'w') as f:
+            json.dump({
+                'last_alerts': {
+                    'ERROR_2026-03-29': datetime.now().isoformat()
+                }
+            }, f)
+
+        # 冷却期内，应该跳过
+        assert should_send_alert("2026-03-29", "ERROR") is False
+
+    def test_error_sends_after_cooldown(self, tmp_path, monkeypatch):
+        """ERROR 级别冷却期后重新发送"""
+        stockdata_root = tmp_path / "stockdata"
+        stockdata_root.mkdir()
+        monkeypatch.setenv("STOCKDATA_ROOT", str(stockdata_root))
+
+        # 模拟冷却期已过（25小时前）
+        checkpoint_file = stockdata_root / "status" / "health_checkpoint.json"
+        checkpoint_file.parent.mkdir(parents=True, exist_ok=True)
+        old_time = (datetime.now() - timedelta(hours=25)).isoformat()
+        with open(checkpoint_file, 'w') as f:
+            json.dump({
+                'last_alerts': {
+                    'ERROR_2026-03-29': old_time
+                }
+            }, f)
+
+        # 冷却期已过，应该发送
+        assert should_send_alert("2026-03-29", "ERROR") is True
+
+
+class TestLoadReport:
+    """日报加载测试"""
+
+    def test_missing_report_returns_none(self, tmp_path, monkeypatch):
+        """日报不存在返回 None"""
+        stockdata_root = tmp_path / "stockdata"
+        stockdata_root.mkdir()
+        monkeypatch.setenv("STOCKDATA_ROOT", str(stockdata_root))
+
+        from monitor.health_check import load_report
+        result = load_report("2026-03-29")
+        assert result is None
+
+    def test_corrupted_report_returns_none(self, tmp_path, monkeypatch):
+        """日报损坏返回 None"""
+        stockdata_root = tmp_path / "stockdata"
+        stockdata_root.mkdir()
+        monkeypatch.setenv("STOCKDATA_ROOT", str(stockdata_root))
+
+        from monitor.health_check import load_report
+
+        # 创建损坏的日报
+        report_file = stockdata_root / "status" / "daily_report_20260329.json"
+        report_file.parent.mkdir(parents=True, exist_ok=True)
+        with open(report_file, 'w') as f:
+            f.write('{"invalid json')
+
+        result = load_report("2026-03-29")
+        assert result is None
+
+    def test_valid_report_loaded(self, tmp_path, monkeypatch):
+        """有效日报正确加载"""
+        stockdata_root = tmp_path / "stockdata"
+        stockdata_root.mkdir()
+        monkeypatch.setenv("STOCKDATA_ROOT", str(stockdata_root))
+
+        from monitor.health_check import load_report
+
+        # 创建有效的日报
+        report_file = stockdata_root / "status" / "daily_report_20260329.json"
+        report_file.parent.mkdir(parents=True, exist_ok=True)
+        with open(report_file, 'w') as f:
+            json.dump({
+                "date": "2026-03-29",
+                "summary": {"success_count": 100, "total_count": 100}
+            }, f)
+
+        result = load_report("2026-03-29")
+        assert result is not None
+        assert result["date"] == "2026-03-29"
+
+
+class TestUpdateCheckpoint:
+    """检查点更新测试"""
+
+    def test_checkpoint_atomic_write(self, tmp_path, monkeypatch):
+        """检查点原子写入"""
+        stockdata_root = tmp_path / "stockdata"
+        stockdata_root.mkdir()
+        monkeypatch.setenv("STOCKDATA_ROOT", str(stockdata_root))
+
+        from monitor.health_check import update_checkpoint
+
+        update_checkpoint("2026-03-29", "ERROR")
+
+        checkpoint_file = stockdata_root / "status" / "health_checkpoint.json"
+        assert checkpoint_file.exists()
+
+        with open(checkpoint_file, 'r') as f:
+            data = json.load(f)
+        assert "last_alerts" in data
+        assert "ERROR_2026-03-29" in data["last_alerts"]
+
+
+class TestStorageStats:
+    """存储统计测试"""
+
+    def test_storage_stats_empty(self, tmp_path, monkeypatch):
+        """空目录的存储统计"""
+        stockdata_root = tmp_path / "stockdata"
+        stockdata_root.mkdir()
+        monkeypatch.setenv("STOCKDATA_ROOT", str(stockdata_root))
+
+        from monitor.health_check import get_storage_stats
+
+        stats = get_storage_stats()
+        assert stats.raw_daily_mb == 0
+        assert stats.warm_mb == 0
+        assert stats.sqlite_mb == 0
+        assert stats.total_stocks == 0

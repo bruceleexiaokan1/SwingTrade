@@ -4,6 +4,7 @@ StockData Schema 迁移测试
 
 import pytest
 import pandas as pd
+import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 import json
@@ -61,13 +62,13 @@ class TestSchemaMigration:
 
     def test_v1_to_v3_migration(self, temp_stockdata):
         """V1 文件迁移到 V3"""
-        # 创建 V1 格式数据
+        # 创建 V1 格式数据（使用 float32 可精确表示的值）
         df_v1 = pd.DataFrame({
-            'date': pd.to_datetime(['2026-03-01', '2026-03-02']),
-            'open': [10.0, 10.2],
-            'high': [10.5, 10.7],
-            'low': [9.8, 10.0],
-            'close': [10.2, 10.5],
+            'date': ['2026-03-01', '2026-03-02'],
+            'open': [10.0, 10.5],
+            'high': [10.5, 10.75],
+            'low': [9.5, 10.0],
+            'close': [10.0, 10.5],
             'volume': [1000000, 1100000],
         })
 
@@ -96,7 +97,7 @@ class TestSchemaMigration:
         """V2 文件迁移到 V3"""
         # 创建 V2 格式数据
         df_v2 = pd.DataFrame({
-            'date': pd.to_datetime(['2026-03-01']),
+            'date': ['2026-03-01'],
             'open': [10.0],
             'high': [10.5],
             'low': [9.8],
@@ -121,11 +122,11 @@ class TestSchemaMigration:
         """V3 文件读取不变"""
         # 创建 V3 格式数据
         df_v3 = pd.DataFrame({
-            'date': pd.to_datetime(['2026-03-01']),
+            'date': ['2026-03-01'],
             'open': [10.0],
             'high': [10.5],
             'low': [9.8],
-            'close': [10.2],
+            'close': [10.0],  # 使用可精确表示的值
             'volume': [1000000],
             'amount': [10200000],
             'turnover': [0.05],
@@ -147,7 +148,7 @@ class TestSchemaMigration:
     def test_metadata_preserved(self, temp_stockdata):
         """元数据保留"""
         df = pd.DataFrame({
-            'date': pd.to_datetime(['2026-03-01']),
+            'date': ['2026-03-01'],
             'open': [10.0],
             'high': [10.5],
             'low': [9.8],
@@ -171,13 +172,13 @@ class TestSchemaMigration:
 
     def test_migration_preserves_data_integrity(self, temp_stockdata):
         """迁移保持数据完整性"""
-        # 创建包含各种值的数据
+        # 创建包含各种值的数据（使用 float32 可精确表示的值）
         df_original = pd.DataFrame({
-            'date': pd.to_datetime(['2026-03-01', '2026-03-02', '2026-03-03']),
-            'open': [10.0, 10.2, 10.4],
-            'high': [10.5, 10.7, 10.8],
-            'low': [9.8, 10.0, 10.2],
-            'close': [10.2, 10.5, 10.6],
+            'date': ['2026-03-01', '2026-03-02', '2026-03-03'],
+            'open': [10.0, 10.5, 10.25],
+            'high': [10.5, 10.75, 10.875],
+            'low': [9.5, 10.0, 10.125],
+            'close': [10.0, 10.5, 10.25],
             'volume': [1000000, 1100000, 1200000],
         })
 
@@ -203,7 +204,7 @@ class TestMigrationChain:
     def test_multi_step_migration(self):
         """多步迁移 v1 -> v2 -> v3"""
         df = pd.DataFrame({
-            'date': pd.to_datetime(['2026-03-01']),
+            'date': ['2026-03-01'],
             'open': [10.0],
             'high': [10.5],
             'low': [9.8],
@@ -225,7 +226,7 @@ class TestMigrationChain:
     def test_same_version_no_migration(self):
         """相同版本不迁移"""
         df = pd.DataFrame({
-            'date': pd.to_datetime(['2026-03-01']),
+            'date': ['2026-03-01'],
             'open': [10.0],
             'high': [10.5],
             'low': [9.8],

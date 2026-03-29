@@ -66,8 +66,11 @@ def check_directories():
                 test_file.touch()
                 test_file.unlink()
                 print(f"  ✅ {name}: {path} (可写)")
-            except:
-                print(f"  ❌ {name}: {path} (不可写)")
+            except PermissionError as e:
+                print(f"  ❌ {name}: {path} (权限拒绝)")
+                all_ok = False
+            except OSError as e:
+                print(f"  ❌ {name}: {path} (不可写: {e})")
                 all_ok = False
         else:
             print(f"  ⚠️  {name}: {path} (不存在，将自动创建)")

@@ -10,6 +10,9 @@ from typing import Optional, Tuple
 import pandas as pd
 import sys
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 # 添加 scripts 到 path 以导入 quality 模块
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../..', 'scripts'))
@@ -263,7 +266,8 @@ class QualityScorer:
             df = pd.DataFrame([record])
             result = validate_daily(df)
             return result['score']
-        except Exception:
+        except Exception as e:
+            logger.warning(f"Base quality validation failed: {e}")
             return None
 
     def should_verify(self, score: QualityScore) -> bool:

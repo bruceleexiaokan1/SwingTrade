@@ -1,6 +1,6 @@
 # SwingTrade 数据采集与存储系统设计
 
-**版本**: v1.3
+**版本**: v1.4
 **状态**: 已合并
 **维护者**: bruce li
 **更新日期**: 2026-03-29
@@ -331,7 +331,7 @@ class FetchResult:
 
 ```python
 {
-    "date": "datetime64",      # 交易日期
+    "date": "string",          # 交易日期 (YYYY-MM-DD)
     "code": "str",             # 股票代码
     "open": "float32",         # 开盘价
     "high": "float32",         # 最高价
@@ -696,6 +696,7 @@ def read_parquet_with_version(path: str) -> Tuple[pd.DataFrame, str]:
     if current_version != SCHEMA_VERSION:
         df = SchemaMigrator.migrate(df, current_version, SCHEMA_VERSION)
         write_parquet_with_metadata(df, path, SCHEMA_VERSION)
+        current_version = SCHEMA_VERSION  # 迁移后返回新版本
 
     return df, current_version
 ```
@@ -730,6 +731,20 @@ def read_parquet_with_version(path: str) -> Tuple[pd.DataFrame, str]:
 | 指数采集器 | test_index_fetcher.py | 4 | ✅ 通过 |
 | 核心股票加载器 | test_core_stock_loader.py | 5 | ✅ 通过 |
 | **合计** | | **90** | **全部通过** |
+
+### 12.2 测试覆盖（更新至 208 个测试）
+
+| 测试套件 | 测试数 | 状态 |
+|----------|--------|------|
+| test_quality.py | 22 | ✅ |
+| test_writer.py | 10 | ✅ |
+| test_fetcher/ | 26 | ✅ |
+| test_health_check.py | 12 | ✅ |
+| test_backup.py | 4 | ✅ |
+| test_indicators/ | 20 | ✅ |
+| test_migration.py | 10 | ✅ |
+| test_warm_summary.py | 2 | ✅ |
+| **合计** | **208** | **全部通过** |
 
 ## 价格转换功能
 
@@ -851,9 +866,64 @@ python -m src.data.fetcher.backfill \
 
 ---
 
-**文档版本**: v1.8
+### 18.5 Schema Migration 测试修复（2026-03-29）
+
+| 问题 | 影响 | 修复 |
+|------|------|------|
+| test_migration.py 使用 `pd.to_datetime()` 创建 datetime64[ns] | 与 schema string 类型不匹配，5个测试失败 | 改为字符串 `['2026-03-01']` |
+| schema_registry.py `pq.write_table(metadata=...)` API 变更 | pyarrow 版本差异，metadata 参数不再支持 | 改用 `schema.with_metadata(metadata)` |
+| schema_registry.py 迁移后返回旧版本号 | 迁移成功后仍返回 v1 | 迁移后设置 `current_version = SCHEMA_VERSION` |
+| test_migration.py float32 精度丢失 | `10.2` 变成 `10.199999...` | 使用 float32 可精确表示的值 |
+
+**验证**：208 个测试全部通过
+
+---
+
+### 18.6 质量提升修复（2026-03-29）
+
+| 问题 | 影响 | 修复 |
+|------|------|------|
+| 裸 `except Exception` 静默吞掉错误 | 6处数据源模块无法诊断问题 | 改为 `except Exception as e: logger.warning(...)` |
+| SQLite 连接不用 context manager | 异常时连接不关闭，可能泄漏 | 添加 `_db_connection()` 上下文管理器 |
+| `print()` 而非 logger | loader.py 中 print 无法被日志系统捕获 | 改为 `logger.info(...)` |
+| engine.py 死代码 | `holding_days_list` 计算后未使用 | 删除无用代码块 |
+| 锁文件目录累积 | `/tmp/stockdata_locks/` 无清理 | 添加 `_cleanup_stale_locks()` 启动时清理 |
+| 回填进度文件竞态 | 并发回填可能丢进度 | 改用原子写入 `temp + rename` |
+
+**验证**：226 个测试全部通过
+
+---
+
+### 18.7 MEDIUM 优先级修复（2026-03-29）
+
+| 问题 | 影响 | 修复 |
+|------|------|------|
+| production_check.py 裸 `except:` | 环境检查静默失败，无法诊断 | 改为 `except PermissionError` / `except OSError` |
+| 错误路径无测试 | 网络失败/磁盘满/损坏数据无覆盖 | 新增4个错误路径测试 |
+| 缺少类型注解 | index_fetcher.py, backfill.py 可读性差 | 添加关键方法返回类型注解 |
+
+**验证**：234 个测试全部通过
+
+---
+
+### 18.8 LOW 优先级修复（2026-03-29）
+
+| 问题 | 影响 | 修复 |
+|------|------|------|
+| 字符串类型注解 | `from __future__ import annotations` 替代 | 添加 future 导入，修复3处字符串注解 |
+| 健康检查测试 | 无覆盖 | 新增8个测试（冷却期/原子写入/存储统计） |
+
+**验证**：234 个测试全部通过
+
+---
+
+**文档版本**: v2.2
 **最后更新**: 2026-03-29
 **更新内容**:
+- v2.2: LOW质量修复（字符串注解、健康检查测试），234测试通过
+- v2.1: MEDIUM质量修复（裸except、错误路径测试、类型注解），226测试通过
+- v2.0: 质量提升（裸except修复、SQLite上下文管理器、进度原子写入、锁清理），208测试通过
+- v1.9: Schema Migration 测试修复（pyarrow API、版本号返回、float32精度），208测试通过
 - v1.8: Schema 一致性修复（fetch_daily.py 列名与 init_db.py 同步），179测试通过
 - v1.7: P0 稳定性修复 v2（SMTP超时、回退轮转、SQLite timeout、checkpoint原子），177测试通过
 - v1.6: P0 稳定性修复（文件锁、告警回退、SQLite备份、错误日志），152测试通过

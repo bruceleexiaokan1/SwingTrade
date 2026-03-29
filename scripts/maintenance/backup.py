@@ -97,11 +97,9 @@ def backup_sqlite() -> bool:
 
     try:
         # 使用 sqlite3.backup API 获取一致快照（WAL 模式安全）
-        src_conn = sqlite3.connect(str(source), timeout=30)
-        dst_conn = sqlite3.connect(str(target), timeout=30)
-        src_conn.backup(dst_conn)
-        dst_conn.close()
-        src_conn.close()
+        with sqlite3.connect(str(source), timeout=30) as src_conn:
+            with sqlite3.connect(str(target), timeout=30) as dst_conn:
+                src_conn.backup(dst_conn)
         logger.info(f"SQLite 备份完成: {source} -> {target}")
         return True
     except Exception as e:

@@ -1,8 +1,11 @@
 """股票列表验证器"""
 
+from __future__ import annotations
+
 import re
 from typing import Optional
 from dataclasses import dataclass
+import pandas as pd
 
 # 市场前缀映射
 MARKET_PREFIXES = {
@@ -160,7 +163,7 @@ def is_valid_company_name(name: str) -> bool:
     return True
 
 
-def validate_stock_list(df: "pd.DataFrame") -> tuple:
+def validate_stock_list(df: pd.DataFrame) -> tuple:
     """
     批量验证股票列表
 

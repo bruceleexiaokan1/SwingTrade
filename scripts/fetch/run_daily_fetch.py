@@ -10,6 +10,7 @@
 
 import os
 import sys
+import json
 from datetime import datetime
 
 # 添加项目根目录到 path
@@ -44,7 +45,8 @@ def main():
 
         # 保存日报
         report_path = os.path.join(STOCKDATA_ROOT, "status", f"daily_report_{report.date.replace('-', '')}.json")
-        report._save_report(report, report_path)
+        with open(report_path, 'w', encoding='utf-8') as f:
+            json.dump(report.to_dict(), f, ensure_ascii=False, indent=2)
 
         return 0 if report.summary['network_failed_count'] == 0 else 1
 

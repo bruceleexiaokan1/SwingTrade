@@ -1,0 +1,200 @@
+{
+  "_comment": "板块代码映射表 - EastMoney 专用",
+  "_note": "所有板块代码均使用 EastMoney 格式（BK开头），不涉及 Tushare",
+  "version": "2026-03-29",
+  "data_source": "akshare EastMoney",
+  "_column_mapping": {
+    "akshare_hist": {
+      "日期": "date",
+      "开盘": "open",
+      "收盘": "close",
+      "最高": "high",
+      "最低": "low",
+      "成交量": "volume",
+      "成交额": "amount",
+      "涨跌幅": "pct_change",
+      "涨跌额": "change",
+      "换手率": "turnover"
+    },
+    "akshare_constituents": {
+      "代码": "code",
+      "名称": "name"
+    }
+  },
+  "_sector_portfolio_codes": [
+    {
+      "name": "半导体概念",
+      "code": "BK0917"
+    },
+    {
+      "name": "储能概念",
+      "code": "BK0989"
+    },
+    {
+      "name": "人工智能",
+      "code": "BK0800"
+    },
+    {
+      "name": "AI芯片",
+      "code": "BK1127"
+    },
+    {
+      "name": "人形机器人",
+      "code": "BK1184"
+    },
+    {
+      "name": "机器人概念",
+      "code": "BK1090"
+    },
+    {
+      "name": "军工",
+      "code": "BK0490"
+    },
+    {
+      "name": "国防军工",
+      "code": "BK1204"
+    },
+    {
+      "name": "稀土永磁",
+      "code": "BK0578"
+    },
+    {
+      "name": "稀土",
+      "code": "BK1626"
+    },
+    {
+      "name": "半导体设备",
+      "code": "BK1326"
+    },
+    {
+      "name": "第三代半导体",
+      "code": "BK0952"
+    },
+    {
+      "name": "新材料",
+      "code": "BK0523"
+    },
+    {
+      "name": "碳纤维",
+      "code": "BK1171"
+    },
+    {
+      "name": "特高压",
+      "code": "BK0918"
+    },
+    {
+      "name": "电网自动化设备",
+      "code": "BK1309"
+    },
+    {
+      "name": "量子科技",
+      "code": "BK0710"
+    },
+    {
+      "name": "商业航天",
+      "code": "BK0963"
+    },
+    {
+      "name": "卫星互联网",
+      "code": "BK0921"
+    },
+    {
+      "name": "低空经济",
+      "code": "BK1166"
+    },
+    {
+      "name": "氢能源",
+      "code": "BK0864"
+    },
+    {
+      "name": "大飞机",
+      "code": "BK0814"
+    },
+    {
+      "name": "贵金属",
+      "code": "BK0732"
+    },
+    {
+      "name": "黄金概念",
+      "code": "BK0547"
+    },
+    {
+      "name": "电力设备",
+      "code": "BK1200"
+    },
+    {
+      "name": "锂电池",
+      "code": "BK1303"
+    },
+    {
+      "name": "光伏概念",
+      "code": "BK0588"
+    },
+    {
+      "name": "风电设备",
+      "code": "BK1032"
+    },
+    {
+      "name": "新能源车",
+      "code": "BK0900"
+    },
+    {
+      "name": "传感器",
+      "code": "BK0905"
+    },
+    {
+      "name": "医美概念",
+      "code": "BK0889"
+    },
+    {
+      "name": "医疗美容",
+      "code": "BK1253"
+    },
+    {
+      "name": "软件开发",
+      "code": "BK0737"
+    },
+    {
+      "name": "生物制品",
+      "code": "BK1044"
+    },
+    {
+      "name": "6G概念",
+      "code": "BK0964"
+    },
+    {
+      "name": "固态电池",
+      "code": "BK0968"
+    },
+    {
+      "name": "海洋经济",
+      "code": "BK0623"
+    },
+    {
+      "name": "新型工业化",
+      "code": "BK1150"
+    },
+    {
+      "name": "脑机接口",
+      "code": "BK0809"
+    },
+    {
+      "name": "具身智能",
+      "code": "BK1184"
+    },
+    {
+      "name": "深海采矿",
+      "code": "BK0623"
+    },
+    {
+      "name": "海底光缆",
+      "code": "BK1136"
+    }
+  ],
+  "_notes": {
+    "historical_depth": "EastMoney 板块历史数据约 1 年（2025年起）",
+    "sector_count": "共 483 个概念板块",
+    "cache_ttl": "缓存有效期 24 小时",
+    "tushare_limitation": "Tushare pro.concept 接口需要 6000 积分，当前 token 权限不足。板块 backfill 使用 akshare EastMoney 体系。"
+  }
+}

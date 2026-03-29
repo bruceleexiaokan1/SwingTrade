@@ -197,7 +197,8 @@ class AkShareSource(DataSource):
             # 尝试获取一只股票的数据来测试连接
             self.ak.stock_zh_a_daily(symbol="sh600519", start_date="2026-03-20", end_date="2026-03-20")
             return True
-        except Exception:
+        except Exception as e:
+            logger.warning(f"AkShare health check failed: {e}")
             return False
 
     def _to_akshare_symbol(self, code: str) -> str:

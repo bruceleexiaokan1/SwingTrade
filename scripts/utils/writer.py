@@ -8,6 +8,7 @@ import sqlite3
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
+from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -46,6 +47,16 @@ def _get_db_connection(timeout: float = 30.0) -> sqlite3.Connection:
     return conn
 
 
+@contextmanager
+def _db_connection(timeout: float = 30.0):
+    """数据库连接上下文管理器（自动关闭）"""
+    conn = _get_db_connection(timeout)
+    try:
+        yield conn
+    finally:
+        conn.close()
+
+
 class IdempotentWriter:
     """
     幂等写入器
@@ -60,6 +71,24 @@ class IdempotentWriter:
         self.stockdata_root = stockdata_root or get_stockdata_root()
         self.db_path = db_path or get_db_path()
         self.LOCK_DIR = Path("/tmp/stockdata_locks")
+        self._cleanup_stale_locks()
+
+    def _cleanup_stale_locks(self):
+        """清理超时的锁文件（超过1小时的）"""
+        import time
+        if not self.LOCK_DIR.exists():
+            return
+        try:
+            now = time.time()
+            for lock_file in self.LOCK_DIR.rglob("*.lock"):
+                try:
+                    mtime = lock_file.stat().st_mtime
+                    if now - mtime > 3600:  # 超过1小时
+                        lock_file.unlink()
+                except OSError:
+                    pass
+        except Exception:
+            pass  # 忽略清理失败
 
     def write(self, code: str, df: pd.DataFrame) -> bool:
         """
@@ -178,13 +207,12 @@ class IdempotentWriter:
     def _get_latest_date(self, code: str) -> Optional[str]:
         """获取已存在的最新日期"""
         try:
-            conn = _get_db_connection()
-            row = conn.execute(
-                "SELECT latest_date FROM daily_index WHERE code = ?",
-                [code]
-            ).fetchone()
-            conn.close()
-            return row[0] if row else None
+            with _db_connection() as conn:
+                row = conn.execute(
+                    "SELECT latest_date FROM daily_index WHERE code = ?",
+                    [code]
+                ).fetchone()
+                return row[0] if row else None
         except Exception as e:
             logger.error(f"SQLite 查询失败 {code}: {e}")
             return None

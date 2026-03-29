@@ -7,6 +7,7 @@ StockData 数据加载器
 import json
 import logging
 import sqlite3
+from contextlib import contextmanager
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional, List, Dict, Any
@@ -21,6 +22,16 @@ def _get_db_connection(db_path: Path) -> sqlite3.Connection:
     conn = sqlite3.connect(str(db_path), timeout=30)
     conn.execute('PRAGMA busy_timeout=30000')
     return conn
+
+
+@contextmanager
+def _db_connection(db_path: Path):
+    """数据库连接上下文管理器（自动关闭）"""
+    conn = _get_db_connection(db_path)
+    try:
+        yield conn
+    finally:
+        conn.close()
 
 
 class CoreStockLoader:
@@ -83,25 +94,24 @@ class CoreStockLoader:
             from init_db import init_database
             init_database(str(self.db_path))
 
-        conn = _get_db_connection(self.db_path)
-        conn.execute('PRAGMA journal_mode=WAL')
+        with _db_connection(self.db_path) as conn:
+            conn.execute('PRAGMA journal_mode=WAL')
 
-        rows_affected = 0
-        for _, row in df.iterrows():
-            cursor = conn.execute("""
-                INSERT INTO stocks (code, name, market, is_active, updated_at)
-                VALUES (?, ?, ?, 1, datetime('now'))
-                ON CONFLICT(code) DO UPDATE SET
-                    name = excluded.name,
-                    market = excluded.market,
-                    is_active = 1,
-                    updated_at = datetime('now')
-            """, [row['code'], row['name'], row['market']])
+            rows_affected = 0
+            for _, row in df.iterrows():
+                cursor = conn.execute("""
+                    INSERT INTO stocks (code, name, market, is_active, updated_at)
+                    VALUES (?, ?, ?, 1, datetime('now'))
+                    ON CONFLICT(code) DO UPDATE SET
+                        name = excluded.name,
+                        market = excluded.market,
+                        is_active = 1,
+                        updated_at = datetime('now')
+                """, [row['code'], row['name'], row['market']])
 
-            rows_affected += cursor.rowcount
+                rows_affected += cursor.rowcount
 
-        conn.commit()
-        conn.close()
+            conn.commit()
 
         return rows_affected
 
@@ -114,7 +124,7 @@ class CoreStockLoader:
         """
         df = self.load_from_config()
         rows = self.upsert_to_sqlite(df)
-        print(f"Upserted {rows} stocks to SQLite")
+        logger.info(f"Upserted {rows} stocks to SQLite")
         return df
 
     def _infer_market(self, code: str) -> str:
@@ -133,11 +143,10 @@ class CoreStockLoader:
         if not self.db_path.exists():
             return 0
 
-        conn = _get_db_connection(self.db_path)
-        count = conn.execute(
-            "SELECT COUNT(*) FROM stocks WHERE is_active = 1"
-        ).fetchone()[0]
-        conn.close()
+        with _db_connection(self.db_path) as conn:
+            count = conn.execute(
+                "SELECT COUNT(*) FROM stocks WHERE is_active = 1"
+            ).fetchone()[0]
 
         return count
 

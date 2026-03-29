@@ -159,14 +159,17 @@ def write_parquet_with_metadata(
         'field_count': str(len(df.columns))
     }
 
+    # 创建带元数据的 schema
+    base_schema = SchemaRegistry.get_schema(schema_version)
+    schema_with_meta = base_schema.with_metadata(metadata)
+
     # 转换为 Arrow Table
-    table = pa.Table.from_pandas(df, schema=SchemaRegistry.get_schema(schema_version))
+    table = pa.Table.from_pandas(df, schema=schema_with_meta)
 
     # 写入文件
     pq.write_table(
         table,
         path,
-        metadata=metadata,
         compression='snappy'
     )
 
@@ -198,6 +201,7 @@ def read_parquet_with_version(path: str) -> Tuple[pd.DataFrame, str]:
 
         # 重新写入以更新版本
         write_parquet_with_metadata(df, path, SCHEMA_VERSION)
+        current_version = SCHEMA_VERSION
 
     return df, current_version
 

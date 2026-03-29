@@ -1,10 +1,19 @@
-"""日线数据采集主入口"""
+"""日线数据采集主入口
+
+包含个股和板块数据的每日采集：
+- 个股日线：Tushare 为主，AkShare 验证
+- 板块日线：EastMoney (akshare)
+- 板块成分股：EastMoney (akshare)
+"""
+
+from __future__ import annotations
 
 import os
 import sys
 import logging
 from datetime import datetime, date, timedelta
 from typing import Optional
+import pandas as pd
 
 # 配置日志
 logging.basicConfig(
@@ -26,6 +35,7 @@ from src.data.fetcher.validators.daily_validator import DailyValidator
 from src.data.fetcher.retry_handler import RetryHandler, FetchResult
 from src.data.fetcher.report_generator import DailyReportGenerator
 from src.data.fetcher.exceptions import ConfigurationError
+from src.data.fetcher.sector_fetcher import SectorDataFetcher
 
 
 class DailyFetcher:
@@ -65,18 +75,62 @@ class DailyFetcher:
         self.retry_handler = RetryHandler(max_attempts=2)
         self.report = DailyReportGenerator(self.target_date)
 
+        # 板块数据获取器
+        self.sector_fetcher = SectorDataFetcher(
+            cache_dir=os.path.join(stockdata_root, "sector_cache")
+        )
+
+        # 板块采集统计
+        self.sector_success_count = 0
+        self.sector_fail_count = 0
+        self.constituent_success_count = 0
+
         # 状态
         self.success_count = 0
         self.fail_count = 0
 
     def _get_previous_trading_day(self) -> str:
-        """获取上一个交易日（简化版，周一到周五）"""
-        today = date.today()
-        if today.weekday() == 0:  # Monday
-            prev = today - timedelta(days=3)  # Friday
-        else:
-            prev = today - timedelta(days=1)
-        return prev.strftime("%Y-%m-%d")
+        """获取上一个交易日（使用 Tushare 交易日历）"""
+        try:
+            import tushare as ts
+            from dotenv import load_dotenv
+            load_dotenv()
+            token = os.getenv("TUSHARE_TOKEN")
+            if not token:
+                # 尝试从环境变量加载
+                raise ValueError("No TUSHARE_TOKEN found")
+
+            pro = ts.pro_api(token)
+            today_str = date.today().strftime("%Y%m%d")
+
+            # 获取交易日历
+            cal_df = pro.trade_cal(
+                exchange="SSE",
+                end_date=today_str,
+                is_open="1"
+            )
+
+            if cal_df is None or cal_df.empty:
+                raise ValueError("Failed to get trade calendar")
+
+            # 获取最后一条记录（最近一个交易日）
+            prev_trade_date = cal_df.iloc[-1]["cal_date"]
+            return prev_trade_date
+
+        except Exception as e:
+            # 降级方案：使用简化逻辑
+            logging.warning(f"Failed to get trade calendar: {e}, using simplified logic")
+            today = date.today()
+            weekday = today.weekday()
+            if weekday == 0:  # Monday
+                prev = today - timedelta(days=3)  # Friday
+            elif weekday == 6:  # Sunday
+                prev = today - timedelta(days=2)  # Friday
+            elif weekday == 5:  # Saturday
+                prev = today - timedelta(days=1)  # Friday
+            else:
+                prev = today - timedelta(days=1)
+            return prev.strftime("%Y-%m-%d")
 
     def _init_sources(self):
         """初始化数据源"""
@@ -99,11 +153,10 @@ class DailyFetcher:
 
         if os.path.exists(sqlite_db):
             import sqlite3
-            conn = sqlite3.connect(sqlite_db)
-            df = conn.execute(
-                "SELECT code, name, market FROM stocks WHERE is_active = 1"
-            ).fetchall()
-            conn.close()
+            with sqlite3.connect(sqlite_db) as conn:
+                df = conn.execute(
+                    "SELECT code, name, market FROM stocks WHERE is_active = 1"
+                ).fetchall()
 
             if df:
                 return [{"code": row[0], "name": row[1], "market": row[2]} for row in df]
@@ -196,7 +249,7 @@ class DailyFetcher:
 
         return None
 
-    def _write_daily(self, code: str, df: "pd.DataFrame") -> bool:
+    def _write_daily(self, code: str, df: pd.DataFrame) -> bool:
         """
         写入日线数据到 Parquet
 
@@ -251,7 +304,7 @@ class DailyFetcher:
             logger.error(f"Write failed: {code} - {e}")
             return False
 
-    def _update_daily_index(self, code: str, df: "pd.DataFrame"):
+    def _update_daily_index(self, code: str, df: pd.DataFrame) -> None:
         """更新 SQLite 日线索引"""
         import sqlite3
 
@@ -261,52 +314,161 @@ class DailyFetcher:
             return
 
         try:
-            conn = sqlite3.connect(sqlite_db)
-            conn.execute('PRAGMA journal_mode=WAL')
+            with sqlite3.connect(sqlite_db) as conn:
+                conn.execute('PRAGMA journal_mode=WAL')
 
-            date_range = df["date"].agg(["min", "max"])
+                date_range = df["date"].agg(["min", "max"])
 
-            conn.execute("""
-                INSERT OR REPLACE INTO daily_index
-                (code, latest_date, file_path, row_count, start_date, end_date, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
-            """, [
-                code,
-                date_range["max"],
-                f"raw/daily/{code}.parquet",
-                len(df),
-                date_range["min"],
-                date_range["max"]
-            ])
+                conn.execute("""
+                    INSERT OR REPLACE INTO daily_index
+                    (code, latest_date, file_path, row_count, start_date, end_date, updated_at)
+                    VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+                """, [
+                    code,
+                    date_range["max"],
+                    f"raw/daily/{code}.parquet",
+                    len(df),
+                    date_range["min"],
+                    date_range["max"]
+                ])
 
-            # 记录 update_log
-            conn.execute("""
-                INSERT INTO update_log
-                (data_type, code, update_date, status, row_count, error_msg, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
-            """, [
-                "daily",
-                code,
-                self.target_date,
-                "success",
-                len(df),
-                None
-            ])
+                # 记录 update_log
+                conn.execute("""
+                    INSERT INTO update_log
+                    (data_type, code, update_date, status, row_count, error_msg, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+                """, [
+                    "daily",
+                    code,
+                    self.target_date,
+                    "success",
+                    len(df),
+                    None
+                ])
 
-            conn.commit()
-            conn.close()
+                conn.commit()
 
         except Exception as e:
             logger.error(f"Failed to update daily index: {e}")
 
-    def fetch_all(self, codes: Optional[list] = None):
+    # ==================== 板块数据采集 ====================
+
+    def _fetch_sectors(self, force_update: bool = False) -> dict:
         """
-        采集全市场日线数据
+        采集所有板块日线数据
+
+        Args:
+            force_update: 是否强制更新（忽略缓存）
+
+        Returns:
+            dict: {sector_name: success_count}
+        """
+        logger.info("开始采集板块数据...")
+
+        # 获取板块列表
+        sectors = self.sector_fetcher.get_all_sectors()
+        if not sectors:
+            logger.warning("未获取到板块列表")
+            return {}
+
+        logger.info(f"获取到 {len(sectors)} 个板块")
+
+        results = {}
+        success_count = 0
+
+        for i, sector in enumerate(sectors):
+            sector_name = sector['name']
+
+            if (i + 1) % 50 == 0:
+                logger.info(f"板块进度: {i+1}/{len(sectors)}")
+
+            try:
+                # 采集板块日线（只采集目标日期）
+                df = self.sector_fetcher.fetch_sector_daily(
+                    sector_name=sector_name,
+                    start_date=self.target_date,
+                    end_date=self.target_date,
+                    force_update=force_update
+                )
+
+                if not df.empty:
+                    success_count += 1
+                    results[sector_name] = "success"
+                else:
+                    results[sector_name] = "empty"
+
+            except Exception as e:
+                logger.debug(f"板块采集失败 {sector_name}: {e}")
+                results[sector_name] = "error"
+
+        logger.info(f"板块数据采集完成: {success_count}/{len(sectors)} 成功")
+        self.sector_success_count = success_count
+        self.sector_fail_count = len(sectors) - success_count
+
+        return results
+
+    def _update_sector_constituents(self, force_update: bool = False) -> dict:
+        """
+        更新所有板块的成分股数据
+
+        Args:
+            force_update: 是否强制更新（忽略缓存）
+
+        Returns:
+            dict: {sector_name: stock_count}
+        """
+        logger.info("开始更新板块成分股...")
+
+        # 获取板块列表
+        sectors = self.sector_fetcher.get_all_sectors()
+        if not sectors:
+            logger.warning("未获取到板块列表")
+            return {}
+
+        logger.info(f"获取到 {len(sectors)} 个板块")
+
+        results = {}
+        success_count = 0
+
+        for i, sector in enumerate(sectors):
+            sector_name = sector['name']
+
+            if (i + 1) % 50 == 0:
+                logger.info(f"成分股更新进度: {i+1}/{len(sectors)}")
+
+            try:
+                codes = self.sector_fetcher.get_constituents(
+                    sector_name=sector_name,
+                    force_update=force_update
+                )
+
+                if codes:
+                    success_count += 1
+                    results[sector_name] = len(codes)
+                else:
+                    results[sector_name] = 0
+
+            except Exception as e:
+                logger.debug(f"成分股获取失败 {sector_name}: {e}")
+                results[sector_name] = -1
+
+        logger.info(f"板块成分股更新完成: {success_count}/{len(sectors)} 成功")
+        self.constituent_success_count = success_count
+
+        return results
+
+    def fetch_all(self, codes: Optional[list] = None, fetch_sectors: bool = True):
+        """
+        采集全市场日线数据（包括个股和板块）
 
         Args:
             codes: 股票代码列表，若不提供则自动获取全市场列表
+            fetch_sectors: 是否采集板块数据
         """
         logger.info(f"Starting daily fetch for {self.target_date}")
+
+        # ==================== 1. 采集个股日线 ====================
+        logger.info("=== 阶段1: 采集个股日线数据 ===")
 
         # 获取股票列表
         if codes is None:
@@ -329,8 +491,41 @@ class DailyFetcher:
             else:
                 self.fail_count += 1
 
+        logger.info(f"个股采集完成: {self.success_count} success, {self.fail_count} failed")
+
+        # ==================== 2. 采集板块数据 ====================
+        if fetch_sectors:
+            logger.info("=== 阶段2: 采集板块日线数据 ===")
+            try:
+                sector_results = self._fetch_sectors()
+                logger.info(f"板块数据采集: {self.sector_success_count} success, {self.sector_fail_count} failed")
+            except Exception as e:
+                logger.error(f"板块数据采集失败: {e}")
+                sector_results = {}
+
+            # ==================== 3. 更新板块成分股 ====================
+            logger.info("=== 阶段3: 更新板块成分股 ===")
+            try:
+                constituent_results = self._update_sector_constituents()
+                logger.info(f"成分股更新: {self.constituent_success_count} sectors updated")
+            except Exception as e:
+                logger.error(f"成分股更新失败: {e}")
+                constituent_results = {}
+        else:
+            sector_results = {}
+            constituent_results = {}
+
         # 生成日报
         report = self.report.generate()
+
+        # 添加板块统计到报告
+        if fetch_sectors:
+            report.sector_summary = {
+                'total_sectors': len(sector_results),
+                'success_count': self.sector_success_count,
+                'fail_count': self.sector_fail_count,
+                'constituent_success_count': self.constituent_success_count
+            }
 
         logger.info(f"Fetch completed: {self.success_count} success, {self.fail_count} failed")
 

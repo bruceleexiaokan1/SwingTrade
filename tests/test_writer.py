@@ -217,3 +217,83 @@ class TestRetryMechanism:
         # 应该抛出异常而不是无限重试
         with pytest.raises(Exception):
             writer.write('000001', df)
+
+
+class TestErrorPaths:
+    """错误路径测试"""
+
+    def test_corrupted_parquet_handled(self, temp_stockdata, temp_sqlite):
+        """损坏的 Parquet 文件被正确处理"""
+        from utils.writer import IdempotentWriter, WriteError
+
+        writer = IdempotentWriter(
+            stockdata_root=temp_stockdata,
+            db_path=temp_sqlite
+        )
+
+        # 创建包含损坏数据的 Parquet 文件
+        parquet_path = temp_stockdata / "raw/daily/000001.parquet"
+        parquet_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(parquet_path, 'wb') as f:
+            f.write(b'corrupted parquet data')
+
+        # 尝试写入新数据，损坏的 parquet 会导致读取失败
+        df, _ = ANOMALY_TEST_CASES['perfect']()
+        # 应该抛出 WriteError 而不是未处理的异常
+        with pytest.raises(WriteError):
+            writer.write('000001', df)
+
+    def test_readonly_directory_handled(self, temp_stockdata, temp_sqlite):
+        """只读目录被正确处理"""
+        from utils.writer import IdempotentWriter, WriteError
+
+        writer = IdempotentWriter(
+            stockdata_root=temp_stockdata,
+            db_path=temp_sqlite
+        )
+
+        # 创建只读目录
+        readonly_dir = temp_stockdata / "raw/daily"
+        readonly_dir.mkdir(parents=True, exist_ok=True)
+        readonly_dir.chmod(0o444)  # 只读
+
+        try:
+            df, _ = ANOMALY_TEST_CASES['perfect']()
+            # 应该抛出 WriteError 而不是未捕获的 PermissionError
+            with pytest.raises(WriteError):
+                writer.write('000001', df)
+        finally:
+            # 恢复权限以便清理
+            readonly_dir.chmod(0o755)
+
+    def test_empty_dataframe_handled(self, temp_stockdata, temp_sqlite):
+        """空 DataFrame 被正确处理"""
+        from utils.writer import IdempotentWriter
+
+        writer = IdempotentWriter(
+            stockdata_root=temp_stockdata,
+            db_path=temp_sqlite
+        )
+
+        # 空 DataFrame
+        df = pd.DataFrame()
+
+        # 应该返回 False 而不是抛出异常
+        result = writer.write('000001', df)
+        assert result is False
+
+    def test_sqlite_connection_failure(self, temp_stockdata):
+        """SQLite 连接失败被正确处理"""
+        from utils.writer import IdempotentWriter, WriteError
+
+        # 使用不存在的数据库路径
+        writer = IdempotentWriter(
+            stockdata_root=temp_stockdata,
+            db_path="/nonexistent/path/market.db"
+        )
+
+        df, _ = ANOMALY_TEST_CASES['perfect']()
+
+        # 应该抛出 WriteError（被捕获并包装后的异常）
+        with pytest.raises(WriteError):
+            writer.write('000001', df)

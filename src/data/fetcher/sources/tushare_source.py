@@ -172,7 +172,8 @@ class TushareSource(DataSource):
             # 尝试获取一只股票的基本信息来测试连接
             self.pro.stock_basic(ts_code="600519.SH", fields="ts_code")
             return True
-        except Exception:
+        except Exception as e:
+            logger.warning(f"Tushare health check failed: {e}")
             return False
 
     def _to_ts_code(self, code: str) -> str:
