@@ -68,6 +68,10 @@ SwingTrade/
 │       │   ├── fama_french.py  # Fama-French因子
 │       │   ├── fundamental.py  # 基本面量化
 │       │   └── microstructure.py # 市场微观结构
+│       ├── vectorized/          # 向量化计算模块（共享）
+│       │   ├── indicators.py    # 向量化指标计算
+│       │   ├── signals.py       # 向量化信号检测
+│       │   └── multi_cycle.py   # 向量化多周期共振
 │       ├── fetcher/             # 数据采集
 │       │   ├── sector_fetcher.py   # 板块数据获取
 │       │   └── ...
@@ -132,6 +136,22 @@ print(result.summary())
 - Kelly 仓位管理
 - 市场状态感知
 
+### 向量化回测引擎 (VectorizedBacktester)
+
+高性能向量化回测引擎，支持批量计算多只股票的指标和信号：
+
+**共享模块** (`src/data/vectorized/`):
+- `VectorizedIndicators`: MA、MACD、RSI、ATR、布林带、ADX 批量计算
+- `VectorizedSignals`: 金叉、死叉、突破、RSI 超买超卖信号检测
+- `VectorizedMultiCycle`: 月/周/日多周期共振预计算
+
+**性能优势**:
+- 5只股票 × 2.5年数据：< 5秒完成
+- 预计算所有指标和信号，消除每日重算瓶颈
+- 向量化操作，无 Python 循环
+
+**测试覆盖**: 104 个测试，置信度 100%
+
 ### 共振系统
 
 **板块共振** (ResonanceBacktester):
@@ -190,7 +210,7 @@ python -m pytest tests/test_wave.py -v
 python -m pytest tests/test_multi_cycle.py -v
 ```
 
-**测试覆盖**: 838 tests
+**测试覆盖**: 942 tests (含 104 个向量化引擎测试)
 
 ## 开发进度
 
@@ -199,6 +219,7 @@ python -m pytest tests/test_multi_cycle.py -v
 | 数据存储架构 | ✅ 完成 |
 | 数据采集 | ✅ 完成 |
 | 回测引擎 | ✅ 完成 |
+| 向量化回测引擎 | ✅ 完成 |
 | 共振系统 | ✅ 完成 |
 | 技术指标 | ✅ 完成 |
 | 绩效分析 | ✅ 完成 |
@@ -211,3 +232,4 @@ python -m pytest tests/test_multi_cycle.py -v
 - [数据系统设计](docs/SwingTrade_Data_System_Design.md) - 数据存储架构
 - [因子库规划](docs/factor_library_planning.md) - 因子库建设路线图
 - [回测发现](docs/backtest_findings.md) - 回测结果分析
+- [向量化回测引擎](docs/vectorized_backtest_engine_design.md) - 高性能向量化回测引擎设计
