@@ -64,6 +64,8 @@ class SwingBacktester:
         strategy_params: Optional[StrategyParams] = None,
         # === 共振检查器（可选）===
         resonance_checker=None,
+        # === 多周期趋势检查器 ===
+        stockdata_root: str = "/Users/bruce/workspace/trade/StockData",
     ):
         """
         初始化回测引擎
@@ -101,16 +103,21 @@ class SwingBacktester:
         self.entry_confidence_threshold = entry_confidence_threshold
 
         # === 新增：风险/仓位参数 ===
-        self.trial_position_pct = trial_position_pct
-        self.max_single_loss_pct = max_single_loss_pct
-        self.min_profit_loss_ratio = min_profit_loss_ratio
-        self.max_open_positions = max_open_positions
-        self.atr_circuit_breaker = atr_circuit_breaker
-
-        # 内部组件
+        # 如果提供了 strategy_params，使用其中的值覆盖默认值
         if strategy_params is not None:
+            self.trial_position_pct = strategy_params.trial_position_pct
+            self.max_single_loss_pct = strategy_params.max_single_loss_pct
+            self.min_profit_loss_ratio = strategy_params.min_profit_loss_ratio
+            self.max_open_positions = strategy_params.max_open_positions
+            self.atr_circuit_breaker = strategy_params.atr_circuit_breaker
+            self.entry_confidence_threshold = strategy_params.entry_confidence_threshold
             self.signals = SwingSignals(params=strategy_params)
         else:
+            self.trial_position_pct = trial_position_pct
+            self.max_single_loss_pct = max_single_loss_pct
+            self.min_profit_loss_ratio = min_profit_loss_ratio
+            self.max_open_positions = max_open_positions
+            self.atr_circuit_breaker = atr_circuit_breaker
             self.signals = SwingSignals()
         self.matcher = OrderMatcher(
             slippage_base=slippage_base,
@@ -129,6 +136,14 @@ class SwingBacktester:
         # 共振检查器（可选）
         self.resonance_checker = resonance_checker
         self.resonance_map: Dict[str, Dict[str, bool]] = {}  # date -> {code -> has_resonance}
+
+        # 多周期趋势检查器
+        self.stockdata_root = stockdata_root
+        if resonance_checker is None:
+            from .multi_cycle import MultiCycleResonance
+            self.multi_cycle = MultiCycleResonance(stockdata_root=stockdata_root)
+        else:
+            self.multi_cycle = None
 
         # 仓位管理器（凯利公式 + 波动率调整）
         self.position_sizer = KellyPositionSizer(
@@ -219,15 +234,20 @@ class SwingBacktester:
         return dates
 
     def _get_snapshots(self, date: str) -> Dict[str, pd.DataFrame]:
-        """获取指定日期的全市场快照"""
+        """
+        获取指定日期的全市场快照
+
+        性能优化：使用二分查找（O(log n)）代替逐行扫描（O(n)）
+        """
         snapshots = {}
         for code, df in self.stock_data.items():
-            # 使用向量化过滤替代 O(n) 的 `in` 检查
-            mask = df["date"] == date
-            if mask.any():
-                idx = mask.idxmax()
-                # 取从开始到当前的所有历史数据（用于计算指标）
-                snapshots[code] = df.loc[:idx].copy()
+            # 使用 searchsorted 进行二分查找（假设日期已排序）
+            # searchsorted 返回第一个 >= date 的位置
+            # side='right' 返回最后一个 <= date 的位置
+            positions = df["date"].searchsorted(date, side='right')
+            if positions > 0:
+                # iloc 是 O(1) 操作，不再复制数据
+                snapshots[code] = df.iloc[:positions]
         return snapshots
 
     def _get_next_day_data(self, code: str, date: str) -> pd.DataFrame:
@@ -275,9 +295,19 @@ class SwingBacktester:
             # 分析信号
             result = self.signals.analyze(df)
 
-            # 趋势过滤：仅在上涨趋势入场
-            if result.trend != "uptrend":
+            # 趋势过滤：仅在下跌趋势中禁止入场（允许上涨+横盘）
+            # 注意：横盘趋势中可捕捉 RSI 超卖反弹机会
+            if result.trend == "downtrend":
                 continue
+
+            # === 多周期趋势过滤：周线向下则禁止逆势入场 ===
+            # 知识库：周线定方向，日线找买点
+            # 月线用于仓位管理（共振等级决定仓位上限），不直接过滤入场
+            if self.multi_cycle is not None:
+                mc_result = self.multi_cycle.check_resonance(code, date, lookback_months=6)
+                # 周线向下，禁止做多（不逆势）
+                if mc_result.weekly_trend == "down":
+                    continue
 
             # 入场信号检测
             if result.entry_signal in ("golden", "breakout") and result.entry_confidence >= self.entry_confidence_threshold:
@@ -643,8 +673,11 @@ class SwingBacktester:
                     market_value += current_price * position.shares
 
                     # 更新前3日最低点（知识库：结构止损2）
-                    if len(df) >= 3:
-                        position.lowest_3d_low = df["low"].iloc[-3:].min()
+                    # 修复look-ahead bias：必须使用到当前日为止的数据
+                    idx = mask.idxmax()
+                    recent_df = df.iloc[:idx+1]  # 只用到当前日的数据
+                    if len(recent_df) >= 3:
+                        position.lowest_3d_low = recent_df["low"].iloc[-3:].min()
 
         total_equity = self.cash + market_value
 
@@ -670,7 +703,13 @@ class SwingBacktester:
             if df is None:
                 continue
 
-            last_row = df.iloc[-1]
+            # 使用指定日期的数据，避免look-ahead
+            mask = df["date"] == date
+            if not mask.any():
+                # 如果指定日期没有数据，使用最后一行
+                last_row = df.iloc[-1]
+            else:
+                last_row = df.loc[mask.idxmax()]
             exit_price = last_row["close"]
 
             trade = Trade(

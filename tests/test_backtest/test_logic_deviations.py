@@ -39,59 +39,62 @@ from src.data.indicators.signals import SwingSignals
 class TestRSIDeviation:
     """RSI 偏差验证"""
 
-    def test_rsi_oversold_respects_period_parameter(self):
+    def test_rsi_oversold_uses_dynamic_threshold(self):
         """
-        验证 rsi_oversold() 是否尊重 period 参数
+        验证 rsi_oversold() 使用动态阈值
 
         知识库定义:
-        - 周期 14: RSI < 40 回踩入场，RSI < 30 超卖确认
-        - 周期 6:  超卖阈值应为 30 - (14-6)/2 = 26 (示例)
+        - 周期 14: RSI < 30 超卖确认
+        - 动态调整: 短周期更敏感（阈值略高），长周期更保守
 
-        代码问题: rsi_oversold() 硬编码 threshold=30，忽略 period
+        修复: threshold = max(20, 30 - (14 - period))
         """
-        # 不同的 period 应有不同的阈值判断
-        # 当 period=6 时，同样的 RSI=32 值可能触发不同的结果
-
-        # 验证函数签名是否接受 period 参数
         import inspect
+
+        # 验证函数签名
         sig = inspect.signature(rsi_oversold)
         params = list(sig.parameters.keys())
-
-        # 应该有 period 参数
         assert 'period' in params, "rsi_oversold 应该有 period 参数"
 
-        # 验证不同 RSI 值的行为
-        # RSI=25 应该被判定为超卖
-        assert rsi_oversold(25) == True, "RSI=25 应该触发超卖"
+        # 验证动态阈值计算
+        # period=14: threshold = max(20, 30 - 0) = 30
+        assert rsi_oversold(29, period=14) == True, "RSI=29 < 30 应触发超卖(period=14)"
+        assert rsi_oversold(31, period=14) == False, "RSI=31 > 30 不应触发超卖(period=14)"
 
-        # RSI=35 的判定应该取决于 period
-        # 知识库说 period=14 时 RSI<40 是回踩机会，RSI=35 不算超卖
-        # 但如果硬编码 threshold=30，则 RSI=35 不会触发
-        # 这里我们期望 RSI=35 不触发超卖（因为 35 > 30）
-        result_35 = rsi_oversold(35)
-        assert result_35 == False, f"RSI=35 不应触发超卖（硬编码 threshold=30），实际结果: {result_35}"
+        # period=6: threshold = max(20, 30 - 8) = 22
+        assert rsi_oversold(21, period=6) == True, "RSI=21 < 22 应触发超卖(period=6)"
+        assert rsi_oversold(23, period=6) == False, "RSI=23 > 22 不应触发超卖(period=6)"
 
-    def test_rsi_threshold_matches_knowledge_base(self):
+        # period=21: threshold = max(20, 30 - (-7)) = 30 (不小于20)
+        assert rsi_oversold(29, period=21) == True, "RSI=29 < 30 应触发超卖(period=21)"
+
+    def test_rsi_threshold_now_dynamic(self):
         """
-        验证 RSI 阈值是否符合知识库定义
+        验证 RSI 阈值现在是动态的
 
-        知识库:
-        - RSI < 40 且 > 30 是回踩入场机会
-        - RSI < 30 是超卖底部确认
-
-        代码问题: rsi_oversold 默认 threshold=30，不检查 > 30
+        修复后: threshold 根据 period 动态计算
         """
-        params = StrategyParams()  # rsi_oversold=35
+        # 动态阈值公式: threshold = max(20, 30 - (14 - period))
+        # period=14: threshold=30
+        # period=6: threshold=22
+        # period=10: threshold=26
 
-        # 创建 SwingSignals
-        signals = SwingSignals(params)
+        threshold_14 = max(20, 30 - (14 - 14))  # 30
+        threshold_6 = max(20, 30 - (14 - 6))     # 22
+        threshold_10 = max(20, 30 - (14 - 10))   # 26
 
-        # 验证 rsi_oversold 值是否从 params 读取
-        assert signals.rsi_oversold == 35, "SwingSignals.rsi_oversold 应为 35"
+        assert threshold_14 == 30
+        assert threshold_6 == 22
+        assert threshold_10 == 26
 
-        # 但 rsi_oversold() 函数本身硬编码了 30
-        # 这意味着即使 params.rsi_oversold=40，函数仍然用 30 判断
-        assert rsi_oversold(32) == False, "RSI=32 不应触发硬编码的超卖阈值30"
+        # 验证不同 RSI 值在不同 period 下的行为
+        # threshold = max(20, 30 - (14 - period))
+        # period=14: threshold=30, RSI=25 < 30 → 触发
+        # period=6: threshold=22, RSI=25 < 22 → 不触发
+        # period=10: threshold=26, RSI=25 < 26 → 触发
+        assert rsi_oversold(25, period=14) == True, "RSI=25 < 30触发(period=14)"
+        assert rsi_oversold(25, period=6) == False, "RSI=25 > 22不触发(period=6)"
+        assert rsi_oversold(25, period=10) == True, "RSI=25 < 26触发(period=10)"
 
 
 class TestT2Deviation:

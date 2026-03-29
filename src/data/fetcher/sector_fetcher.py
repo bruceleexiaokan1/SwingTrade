@@ -15,6 +15,7 @@
 
 import json
 import logging
+import time
 from pathlib import Path
 from typing import Optional, List, Dict, Tuple
 from datetime import datetime, timedelta
@@ -39,10 +40,17 @@ class SectorDataFetcher:
     - 本地 parquet 缓存
     - 超过 24 小时自动更新
     - 支持强制刷新
+
+    速率限制：
+    - EastMoney API: 2次/秒（保守值，留有余量）
     """
 
     # EastMoney 板块代码前缀
     EASTMONEY_CODE_PREFIX = "BK"
+
+    # 速率限制：2次/秒（保守值）
+    RATE_LIMIT_PER_SECOND = 2
+    MIN_INTERVAL = 1.0 / RATE_LIMIT_PER_SECOND
 
     def __init__(
         self,
@@ -72,6 +80,9 @@ class SectorDataFetcher:
         self._name_to_code: Dict[str, str] = {}
         self._code_to_name: Dict[str, str] = {}
 
+        # 速率限制状态
+        self._last_call_time = 0.0
+
     def _get_akshare(self):
         """懒加载 akshare"""
         if self._ak is None:
@@ -83,6 +94,18 @@ class SectorDataFetcher:
                     "akshare is not installed. Run: pip install akshare"
                 )
         return self._ak
+
+    def _rate_limit_sleep(self) -> None:
+        """速率限制休眠"""
+        now = time.time()
+        elapsed = now - self._last_call_time
+
+        if elapsed < self.MIN_INTERVAL:
+            sleep_time = self.MIN_INTERVAL - elapsed
+            logger.debug(f"速率限制等待: {sleep_time:.2f}s")
+            time.sleep(sleep_time)
+
+        self._last_call_time = time.time()
 
     def fetch_sector_daily(
         self,
@@ -149,6 +172,9 @@ class SectorDataFetcher:
             DataFrame with columns: date, open, high, low, close, volume
         """
         ak = self._get_akshare()
+
+        # 速率限制
+        self._rate_limit_sleep()
 
         # 转换日期格式：YYYY-MM-DD -> YYYYMMDD
         start_str = start_date.replace("-", "")
@@ -217,14 +243,18 @@ class SectorDataFetcher:
         """
         cache_file = self.cache_dir / f"{sector_name}_constituents.parquet"
 
-        # 检查缓存
+        # 检查缓存（成分股用文件修改时间验证）
         if not force_update and cache_file.exists():
-            df_cache = pd.read_parquet(cache_file)
-            if self._is_cache_valid(df_cache):
+            file_age_hours = (datetime.now() - datetime.fromtimestamp(cache_file.stat().st_mtime)).total_seconds() / 3600
+            if file_age_hours < self.cache_ttl_hours:
+                df_cache = pd.read_parquet(cache_file)
                 return df_cache['code'].tolist()
 
         # 获取新数据
         ak = self._get_akshare()
+
+        # 速率限制
+        self._rate_limit_sleep()
 
         try:
             df = ak.stock_board_concept_cons_em(symbol=sector_name)
@@ -252,6 +282,9 @@ class SectorDataFetcher:
             List of dicts with 'name' and 'code' keys
         """
         ak = self._get_akshare()
+
+        # 速率限制
+        self._rate_limit_sleep()
 
         try:
             df = ak.stock_board_concept_name_em()

@@ -9,6 +9,7 @@ import pandas as pd
 
 from .base import DataSource
 from ..exceptions import NetworkError, SourceError, ConfigurationError
+from ..shared_rate_limiter import get_tushare_limiter, SharedRateLimiter
 
 logger = logging.getLogger(__name__)
 
@@ -29,12 +30,13 @@ class TushareSource(DataSource):
     RATE_THRESHOLD = 0.9            # 90% 阈值
     SAFETY_LIMIT = int(RATE_LIMIT_PER_MINUTE * RATE_THRESHOLD)  # 45次
 
-    def __init__(self, token: Optional[str] = None):
+    def __init__(self, token: Optional[str] = None, use_shared_limiter: bool = True):
         """
         初始化 Tushare 数据源
 
         Args:
             token: Tushare API Token，若不提供则从环境变量 TUSHARE_TOKEN 读取
+            use_shared_limiter: 是否使用共享限流器（支持多线程并发）
         """
         self.token = token or os.getenv("TUSHARE_TOKEN")
         if not self.token:
@@ -57,10 +59,14 @@ class TushareSource(DataSource):
                 date=None
             )
 
-        # 限流状态
-        self._call_count = 0
-        self._last_reset_time = time.time()
-        self._rate_limit_warnings = 0
+        # 限流器
+        if use_shared_limiter:
+            self._rate_limiter = get_tushare_limiter()
+        else:
+            # 旧版单线程限流（保留兼容）
+            self._call_count = 0
+            self._last_reset_time = time.time()
+            self._rate_limit_warnings = 0
 
     def fetch_daily(
         self,
@@ -79,8 +85,11 @@ class TushareSource(DataSource):
         Returns:
             DataFrame
         """
-        # 限流检查
-        self._check_rate_limit()
+        # 限流检查（支持多线程）
+        if hasattr(self, '_rate_limiter'):
+            self._rate_limiter.wait_and_acquire()
+        else:
+            self._check_rate_limit()
 
         # 转换日期格式：YYYY-MM-DD -> YYYYMMDD
         start_str = start_date.replace("-", "")
@@ -277,8 +286,11 @@ class TushareSource(DataSource):
         Returns:
             DataFrame，包含 date, adj_factor 列
         """
-        # 限流检查
-        self._check_rate_limit()
+        # 限流检查（支持多线程）
+        if hasattr(self, '_rate_limiter'):
+            self._rate_limiter.wait_and_acquire()
+        else:
+            self._check_rate_limit()
 
         ts_code = self._to_ts_code(code)
         start_str = start_date.replace("-", "")

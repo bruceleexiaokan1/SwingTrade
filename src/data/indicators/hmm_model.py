@@ -271,13 +271,20 @@ class HMMModel:
 
 
 class HMMMarketRegime:
-    """HMM市场状态检测器（高层接口）"""
+    """HMM市场状态检测器（高层接口）
+
+    性能优化：
+    - 模型每N天更新一次，而非每日期重新拟合
+    - 支持2状态模型（更快更稳定）
+    - 预计算批量状态的接口
+    """
 
     def __init__(
         self,
-        n_states: int = 3,
+        n_states: int = 2,  # 默认2状态（上涨/下跌），更快更稳定
         lookback: int = 60,
-        min_periods: int = 30
+        min_periods: int = 60,
+        update_interval: int = 20  # 每20个交易日更新一次模型
     ):
         """
         Args:
@@ -342,6 +349,86 @@ class HMMMarketRegime:
             })
 
         return pd.DataFrame(results)
+
+    def precompute_regime_batch(
+        self,
+        df: pd.DataFrame,
+        price_col: str = 'close',
+        volume_col: Optional[str] = 'volume'
+    ) -> pd.DataFrame:
+        """
+        预计算市场状态序列（批量，更高效）
+
+        使用滚动窗口训练，每update_interval天更新一次模型
+
+        Args:
+            df: 价格数据
+            price_col: 价格列名
+            volume_col: 成交量列名
+
+        Returns:
+            包含状态信息的DataFrame
+        """
+        if len(df) < self.min_periods:
+            return self._empty_result(df)
+
+        # 准备特征
+        features = self.hmm_model.prepare_features(df, price_col, volume_col)
+        n_samples = features.shape[1]
+
+        results = []
+        last_update_idx = -self.update_interval  # 强制第一次更新
+
+        for i in range(self.min_periods, n_samples):
+            # 每update_interval天或第一次更新模型
+            if i - last_update_idx >= self.update_interval:
+                # 使用历史数据训练
+                train_features = features[:, :i]
+                if train_features.shape[1] >= self.min_periods:
+                    try:
+                        self.hmm_model.fit(train_features)
+                        last_update_idx = i
+                    except Exception as e:
+                        logger.debug(f"HMM fit failed at {i}: {e}")
+                        continue
+
+            # 如果模型已拟合，预测当前状态
+            if self.hmm_model.fitted:
+                try:
+                    _, state_probs = self.hmm_model.predict(features[:, :i+1])
+                    current_probs = state_probs[-1]
+                    current_state = int(np.argmax(current_probs))
+                    state_name = self.hmm_model.state_names_.get(current_state, 'unknown')
+
+                    # 计算波动率水平
+                    current_vol = float(np.abs(features[1, -1])) if i == n_samples - 1 else 0.0
+
+                    # 判断趋势方向
+                    if 'uptrend' in self.hmm_model.state_names_.values():
+                        up_idx = list(self.hmm_model.state_names_.values()).index('uptrend')
+                        down_idx = list(self.hmm_model.state_names_.values()).index('downtrend')
+                        if self.n_states == 2:
+                            trend_direction = 'up' if current_state == up_idx else 'down'
+                        else:
+                            trend_direction = 'up' if current_probs[up_idx] > current_probs[down_idx] else 'down'
+                    else:
+                        trend_direction = 'sideways'
+
+                    results.append({
+                        'date': df.index[i] if hasattr(df.index, '__iter__') and not isinstance(df.index, str) else df.iloc[i].get('date', str(i)),
+                        'state_id': current_state,
+                        'state_name': state_name,
+                        'state_prob': float(current_probs[current_state]),
+                        'regime_confidence': float(np.max(current_probs)),
+                        'up_prob': float(current_probs[up_idx]) if 'uptrend' in self.hmm_model.state_names_.values() else 0.0,
+                        'down_prob': float(current_probs[down_idx]) if 'downtrend' in self.hmm_model.state_names_.values() else 0.0,
+                        'trend_direction': trend_direction,
+                        'volatility_level': current_vol,
+                    })
+                except Exception as e:
+                    logger.debug(f"HMM predict failed at {i}: {e}")
+
+        return pd.DataFrame(results) if results else self._empty_result(df)
 
     def detect_current_regime(
         self,

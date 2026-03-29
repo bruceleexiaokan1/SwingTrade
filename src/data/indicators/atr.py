@@ -44,8 +44,8 @@ def calculate_atr(
     # True Range = 三者中的最大值
     df["tr"] = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
 
-    # ATR = True Range 的移动平均
-    df["atr"] = df["tr"].rolling(window=period, min_periods=1).mean()
+    # ATR = True Range 的 EMA（span=period 与 ADX 内部计算一致）
+    df["atr"] = df["tr"].ewm(span=period, adjust=False, min_periods=1).mean()
 
     # ATR百分比 = ATR / 收盘价 * 100（用于横向比较）
     df["atr_pct"] = (df["atr"] / df["close"]) * 100

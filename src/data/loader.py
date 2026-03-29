@@ -159,21 +159,54 @@ class StockDataLoader:
     - Hot (热数据): 当日实时行情，来自 SQLite latest_quote
     - Warm (温数据): 近 60 天数据，来自 warm/daily_summary
     - Cold (冷数据): 历史数据，来自 raw/daily/{code}.parquet
+
+    性能优化：
+    - LRU缓存：同一股票数据只从磁盘读一次
+    - 惰性加载：按需读取，避免预加载无关数据
     """
 
     WARM_RETENTION_DAYS = 60
 
-    def __init__(self, stockdata_root: str):
+    # 类级别的共享缓存（跨实例共享）
+    _shared_cache: Dict[str, pd.DataFrame] = {}
+    _cache_enabled: bool = True
+
+    def __init__(self, stockdata_root: str, use_cache: bool = True):
         """
         初始化加载器
 
         Args:
             stockdata_root: StockData 根目录
+            use_cache: 是否使用共享缓存（默认True，可跨实例共享）
         """
         self.root = Path(stockdata_root)
         self.daily_dir = self.root / "raw" / "daily"
         self.warm_dir = self.root / "warm" / "daily_summary"
         self.db_path = self.root / "sqlite" / "market.db"
+        self._use_cache = use_cache
+
+    @classmethod
+    def enable_cache(cls):
+        """启用共享缓存"""
+        cls._cache_enabled = True
+
+    @classmethod
+    def disable_cache(cls):
+        """禁用共享缓存"""
+        cls._cache_enabled = False
+
+    @classmethod
+    def clear_cache(cls):
+        """清除共享缓存"""
+        cls._shared_cache.clear()
+
+    @classmethod
+    def get_cache_stats(cls) -> Dict[str, int]:
+        """获取缓存统计"""
+        return {
+            "enabled": cls._cache_enabled,
+            "cached_stocks": len(cls._shared_cache)
+        }
 
     def load_daily(
         self,
@@ -183,6 +216,8 @@ class StockDataLoader:
     ) -> pd.DataFrame:
         """
         加载日线数据（自动热/温/冷分层）
+
+        性能优化：使用共享缓存，同一股票数据只从磁盘读一次
 
         Args:
             code: 股票代码
@@ -197,13 +232,21 @@ class StockDataLoader:
         if not parquet_path.exists():
             return pd.DataFrame()
 
-        try:
-            df = pd.read_parquet(str(parquet_path))
-        except Exception as e:
-            logger.error(f"Parquet 读取失败 {parquet_path}: {e}")
-            return pd.DataFrame()
+        # 尝试从缓存加载
+        cache_key = code
+        if self._use_cache and self._cache_enabled and cache_key in self._shared_cache:
+            df = self._shared_cache[cache_key]
+        else:
+            try:
+                df = pd.read_parquet(str(parquet_path))
+                # 存入缓存（存储完整数据）
+                if self._use_cache and self._cache_enabled:
+                    self._shared_cache[cache_key] = df
+            except Exception as e:
+                logger.error(f"Parquet 读取失败 {parquet_path}: {e}")
+                return pd.DataFrame()
 
-        # 过滤日期范围
+        # 过滤日期范围（在缓存数据上做惰性过滤）
         if start_date is not None:
             df = df[df['date'] >= start_date]
         if end_date is not None:

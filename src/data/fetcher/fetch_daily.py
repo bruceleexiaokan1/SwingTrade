@@ -13,6 +13,7 @@ import sys
 import logging
 from datetime import datetime, date, timedelta
 from typing import Optional
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import pandas as pd
 
 # 配置日志
@@ -103,9 +104,11 @@ class DailyFetcher:
             pro = ts.pro_api(token)
             today_str = date.today().strftime("%Y%m%d")
 
-            # 获取交易日历
+            # 获取最近90天的交易日历（确保有足够数据找到上一个交易日）
+            start_date = (date.today() - timedelta(days=90)).strftime("%Y%m%d")
             cal_df = pro.trade_cal(
                 exchange="SSE",
+                start_date=start_date,
                 end_date=today_str,
                 is_open="1"
             )
@@ -113,7 +116,8 @@ class DailyFetcher:
             if cal_df is None or cal_df.empty:
                 raise ValueError("Failed to get trade calendar")
 
-            # 获取最后一条记录（最近一个交易日）
+            # 按日期排序，取最后一条（最近一个交易日）
+            cal_df = cal_df.sort_values("cal_date")
             prev_trade_date = cal_df.iloc[-1]["cal_date"]
             return prev_trade_date
 
@@ -457,15 +461,16 @@ class DailyFetcher:
 
         return results
 
-    def fetch_all(self, codes: Optional[list] = None, fetch_sectors: bool = True):
+    def fetch_all(self, codes: Optional[list] = None, fetch_sectors: bool = True, max_workers: int = 10):
         """
         采集全市场日线数据（包括个股和板块）
 
         Args:
             codes: 股票代码列表，若不提供则自动获取全市场列表
             fetch_sectors: 是否采集板块数据
+            max_workers: 并发数（默认10，考虑Tushare限流45次/分钟）
         """
-        logger.info(f"Starting daily fetch for {self.target_date}")
+        logger.info(f"Starting daily fetch for {self.target_date} (max_workers={max_workers})")
 
         # ==================== 1. 采集个股日线 ====================
         logger.info("=== 阶段1: 采集个股日线数据 ===")
@@ -478,18 +483,36 @@ class DailyFetcher:
         else:
             names = {c: "" for c in codes}
 
-        # 逐只采集
-        for i, code in enumerate(codes):
-            logger.info(f"[{i+1}/{len(codes)}] Fetching {code}")
+        # 并发采集
+        total = len(codes)
+        completed = 0
 
-            result = self._fetch_single(code, names.get(code, ""))
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # 提交所有任务
+            future_to_code = {
+                executor.submit(self._fetch_single, code, names.get(code, "")): code
+                for code in codes
+            }
 
-            self.report.add_result(result)
+            # 处理完成的任务
+            for future in as_completed(future_to_code):
+                code = future_to_code[future]
+                completed += 1
 
-            if result.fetch_status == "success" and result.write_status == "success":
-                self.success_count += 1
-            else:
-                self.fail_count += 1
+                try:
+                    result = future.result()
+                    self.report.add_result(result)
+
+                    if result.fetch_status == "success" and result.write_status == "success":
+                        self.success_count += 1
+                        logger.info(f"[{completed}/{total}] Success: {code}")
+                    else:
+                        self.fail_count += 1
+                        logger.warning(f"[{completed}/{total}] Failed: {code} - {result.fail_reason}")
+
+                except Exception as e:
+                    self.fail_count += 1
+                    logger.error(f"[{completed}/{total}] Error: {code} - {e}")
 
         logger.info(f"个股采集完成: {self.success_count} success, {self.fail_count} failed")
 

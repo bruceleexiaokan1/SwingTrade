@@ -1230,6 +1230,14 @@ src/data/indicators/
 2. 时机（信号）: RSI, 布林带
 3. 确认（量价）: 成交量
 
+**入场条件（设计约束）**:
+- 趋势过滤：仅在上涨趋势 (`uptrend`) 中入场，下跌/横盘趋势中 RSI 超卖信号被忽略
+- 盈亏比过滤：`min_profit_loss_ratio` 要求预期盈利/止损距离 >= 阈值
+- ATR 熔断：当前 ATR 超过入场时 ATR 的 `atr_circuit_breaker` 倍时禁止开仓
+- 置信度过滤：`entry_confidence_threshold` 低于阈值的信号被忽略
+
+**注意**: 趋势过滤是策略的核心设计，用于避免在下跌趋势中逆势交易。如果需要在下跌/横盘趋势中捕捉反弹机会，需要修改 `_detect_entries()` 中的趋势过滤逻辑。
+
 **验收标准**:
 - [x] 27 个单元测试全部通过
 - [x] 40 只股票回归测试通过
@@ -1265,9 +1273,20 @@ src/backtest/
 |------|--------|------|----------|
 | trial_position_pct | 0.10 | 试探仓位比例（首笔建仓使用10%资金） | engine.py |
 | max_single_loss_pct | 0.02 | 单笔最大亏损限制（单笔亏损不超过总资金的2%） | engine.py |
-| min_profit_loss_ratio | 1.5 | 最小盈亏比要求（预期盈利/预期亏损） | engine.py |
+| min_profit_loss_ratio | 3.0 | 最小盈亏比要求（中长线 >= 1:3） | engine.py |
 | max_open_positions | 5 | 最大同时持仓数 | engine.py |
 | atr_circuit_breaker | 3.0 | ATR熔断倍数（当前ATR超过入场时3倍时禁止开仓） | engine.py |
+
+**结构止损参数**:
+| 参数 | 说明 | 实现位置 |
+|------|------|----------|
+| entry_prev_low | 入场后前一根K线最低点（结构止损1） | engine.py/models.py |
+| lowest_3d_low | 前3日最低点（结构止损2，每日更新） | engine.py/models.py |
+
+**止损触发优先级**（满足任一即触发）:
+1. 跌破 entry_prev_low（结构止损1）
+2. 跌破 lowest_3d_low（结构止损2）
+3. 跌破 stop_loss（入场价 - 2倍ATR）
 
 **绩效指标**:
 | 指标 | 标准 | 计算公式 |
@@ -1311,7 +1330,7 @@ src/backtest/
 | 指标 | rsi_period, rsi_oversold, rsi_overbought | 14, 35, 80 |
 | 指标 | bollinger_period, bollinger_std | 20, 2.0 |
 | 指标 | atr_period, volume_period | 14, 20 |
-| 入场 | entry_confidence_threshold, min_profit_loss_ratio | 0.5, 1.5 |
+| 入场 | entry_confidence_threshold, min_profit_loss_ratio | 0.5, 3.0 |
 | 出场 | atr_stop_multiplier, atr_trailing_multiplier, profit_target_multiplier | 2.0, 3.0, 3.0 |
 | 风控 | trial_position_pct, max_single_loss_pct | 10%, 2% |
 | 风控 | max_open_positions, atr_circuit_breaker | 5, 3.0 |

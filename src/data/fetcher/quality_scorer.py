@@ -193,31 +193,41 @@ class QualityScorer:
         """
         计算范围合理性分数
 
-        每超范围一个字段扣20分
+        - OHLC关系不合理：直接60分
+        - 价格为0或异常：60分
+        - 涨跌停范围内（±10%主板/±20%科创创）：100分
+        - 超出涨跌停范围但合理（新股的特殊波动）：80分
+        - 严重异常（负价格等）：0分
         """
         # 价格范围
         close = record.get("close", 0)
-        if close < 0.01 or close > 10000:
-            return 60.0
+        if close < 0.01:
+            return 0.0  # 价格为0或负数，严重异常
+        if close > 10000:
+            return 60.0  # 价格异常高
 
-        # OHLC 关系
+        # OHLC 关系检查
         open_price = record.get("open", 0)
         high = record.get("high", 0)
         low = record.get("low", 0)
         close = record.get("close", 0)
 
         if high < low:
-            return 60.0
+            return 60.0  # 最高价低于最低价
         if high < open_price or high < close:
-            return 60.0
+            return 60.0  # 最高价低于开盘价或收盘价
         if low > open_price or low > close:
-            return 60.0
+            return 60.0  # 最低价高于开盘价或收盘价
 
-        # 涨跌幅范围
+        # 涨跌幅合理性（区分正常波动和异常）
         pct_chg = record.get("pct_chg")
         if pct_chg is not None:
-            if pct_chg < -0.20 or pct_chg > 0.20:
-                return 60.0
+            # 主板涨跌停范围 ±10%，科创/创业板 ±20%
+            # 超出±23%基本可以认为是数据问题
+            if pct_chg < -0.23 or pct_chg > 0.23:
+                return 60.0  # 严重超限，可能是数据异常
+            elif pct_chg < -0.15 or pct_chg > 0.15:
+                return 80.0  # 超出正常涨跌停，可能是新股或复牌
 
         return 100.0
 
