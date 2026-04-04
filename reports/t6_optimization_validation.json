@@ -1,0 +1,660 @@
+{
+  "date": "2026-04-04",
+  "strategy": "PATTERN_1 \u4f18\u5316\u9a8c\u8bc1",
+  "v11": {
+    "signals": 191,
+    "n_trades": 138,
+    "total_return": 2.3775700576000047,
+    "sharpe": 3.603928995403565,
+    "wfa": {
+      "n_windows": 16,
+      "test_avg_return": 6.898278406250025,
+      "test_avg_sharpe": 4.444962549340106,
+      "positive_ratio": 0.75,
+      "windows": [
+        {
+          "train_period": "2021-01 ~ 2021-06",
+          "test_period": "2021-07 ~ 2021-09",
+          "train_trades": 8,
+          "train_return": 6.648527549999998,
+          "train_sharpe": 7.566074971417514,
+          "test_trades": 5,
+          "test_return": 26.66402783000002,
+          "test_sharpe": 7.895441130006802,
+          "test_dd": 0.8399507999999914,
+          "yearly": {
+            "2021": {
+              "n_trades": 5,
+              "return": 0.2666402783000002,
+              "max_drawdown": 0.008399507999999915
+            }
+          }
+        },
+        {
+          "train_period": "2021-04 ~ 2021-09",
+          "test_period": "2021-10 ~ 2021-12",
+          "train_trades": 13,
+          "train_return": 47.435599980000056,
+          "train_sharpe": 8.37138023114156,
+          "test_trades": 3,
+          "test_return": 8.700248640000005,
+          "test_sharpe": 11.24394974554487,
+          "test_dd": 0.04994795999999042,
+          "yearly": {
+            "2021": {
+              "n_trades": 3,
+              "return": 0.08700248640000005,
+              "max_drawdown": 0.0004994795999999042
+            }
+          }
+        },
+        {
+          "train_period": "2021-07 ~ 2021-12",
+          "test_period": "2022-01 ~ 2022-03",
+          "train_trades": 8,
+          "train_return": 24.97816516000003,
+          "train_sharpe": 5.240602348541394,
+          "test_trades": 10,
+          "test_return": -5.926559009999983,
+          "test_sharpe": -9.668131617144034,
+          "test_dd": 5.926559009999983,
+          "yearly": {
+            "2022": {
+              "n_trades": 10,
+              "return": -0.05926559009999983,
+              "max_drawdown": 0.05926559009999983
+            }
+          }
+        },
+        {
+          "train_period": "2022-01 ~ 2022-06",
+          "test_period": "2022-07 ~ 2022-09",
+          "train_trades": 12,
+          "train_return": -9.38091162999999,
+          "train_sharpe": -7.7856282583303935,
+          "test_trades": 6,
+          "test_return": 3.765102100000018,
+          "test_sharpe": 9.899050536865893,
+          "test_dd": 0.301872158898703,
+          "yearly": {
+            "2022": {
+              "n_trades": 6,
+              "return": 0.03765102100000018,
+              "max_drawdown": 0.00301872158898703
+            }
+          }
+        },
+        {
+          "train_period": "2022-04 ~ 2022-09",
+          "test_period": "2022-10 ~ 2022-12",
+          "train_trades": 8,
+          "train_return": 9.982831020000011,
+          "train_sharpe": 13.829355114217304,
+          "test_trades": 9,
+          "test_return": -0.8308258999999816,
+          "test_sharpe": -2.5134848572373465,
+          "test_dd": 1.9310364377092664,
+          "yearly": {
+            "2022": {
+              "n_trades": 9,
+              "return": -0.008308258999999816,
+              "max_drawdown": 0.019310364377092663
+            }
+          }
+        },
+        {
+          "train_period": "2022-07 ~ 2022-12",
+          "test_period": "2023-01 ~ 2023-03",
+          "train_trades": 15,
+          "train_return": -3.2506803399999624,
+          "train_sharpe": -1.7829346826720063,
+          "test_trades": 12,
+          "test_return": 12.698452970000027,
+          "test_sharpe": 8.785604992925578,
+          "test_dd": 1.3044602506414444,
+          "yearly": {
+            "2023": {
+              "n_trades": 12,
+              "return": 0.12698452970000026,
+              "max_drawdown": 0.013044602506414444
+            }
+          }
+        },
+        {
+          "train_period": "2023-01 ~ 2023-06",
+          "test_period": "2023-07 ~ 2023-09",
+          "train_trades": 12,
+          "train_return": 12.698452970000027,
+          "train_sharpe": 8.785604992925578,
+          "test_trades": 6,
+          "test_return": -1.3479570799999638,
+          "test_sharpe": -3.014484487483608,
+          "test_dd": 2.8054063597659424,
+          "yearly": {
+            "2023": {
+              "n_trades": 6,
+              "return": -0.013479570799999637,
+              "max_drawdown": 0.028054063597659423
+            }
+          }
+        },
+        {
+          "train_period": "2023-04 ~ 2023-09",
+          "test_period": "2023-10 ~ 2023-12",
+          "train_trades": 6,
+          "train_return": -1.3479570799999638,
+          "train_sharpe": -3.014484487483608,
+          "test_trades": 8,
+          "test_return": 2.27216167000003,
+          "test_sharpe": 1.3591755318079601,
+          "test_dd": 7.291977098094591,
+          "yearly": {
+            "2023": {
+              "n_trades": 8,
+              "return": 0.022721616700000304,
+              "max_drawdown": 0.07291977098094592
+            }
+          }
+        },
+        {
+          "train_period": "2023-07 ~ 2023-12",
+          "test_period": "2024-01 ~ 2024-03",
+          "train_trades": 14,
+          "train_return": -2.630146179999967,
+          "train_sharpe": -0.6875138537112316,
+          "test_trades": 3,
+          "test_return": 30.59676937000001,
+          "test_sharpe": 8.686247750843997,
+          "test_dd": 1.1292457900000008,
+          "yearly": {
+            "2024": {
+              "n_trades": 3,
+              "return": 0.3059676937000001,
+              "max_drawdown": 0.011292457900000009
+            }
+          }
+        },
+        {
+          "train_period": "2023-10 ~ 2024-03",
+          "test_period": "2024-04 ~ 2024-06",
+          "train_trades": 11,
+          "train_return": 32.85120790000004,
+          "train_sharpe": 4.680200944336905,
+          "test_trades": 5,
+          "test_return": 1.9725521000000152,
+          "test_sharpe": 8.778742621490112,
+          "test_dd": 0.30916255337028176,
+          "yearly": {
+            "2024": {
+              "n_trades": 5,
+              "return": 0.019725521000000152,
+              "max_drawdown": 0.0030916255337028174
+            }
+          }
+        },
+        {
+          "train_period": "2024-01 ~ 2024-06",
+          "test_period": "2024-07 ~ 2024-09",
+          "train_trades": 8,
+          "train_return": 29.936231160000027,
+          "train_sharpe": 5.623902945479043,
+          "test_trades": 10,
+          "test_return": 7.361039280000055,
+          "test_sharpe": 6.005965799298347,
+          "test_dd": 1.7642666599999939,
+          "yearly": {
+            "2024": {
+              "n_trades": 10,
+              "return": 0.07361039280000055,
+              "max_drawdown": 0.01764266659999994
+            }
+          }
+        },
+        {
+          "train_period": "2024-04 ~ 2024-09",
+          "test_period": "2024-10 ~ 2024-12",
+          "train_trades": 15,
+          "train_return": 2.081248440000025,
+          "train_sharpe": 1.2262984521694422,
+          "test_trades": 4,
+          "test_return": 10.06307633000001,
+          "test_sharpe": 11.030786707235052,
+          "test_dd": 0.08865425000000687,
+          "yearly": {
+            "2024": {
+              "n_trades": 4,
+              "return": 0.1006307633000001,
+              "max_drawdown": 0.0008865425000000687
+            }
+          }
+        },
+        {
+          "train_period": "2024-07 ~ 2024-12",
+          "test_period": "2025-01 ~ 2025-03",
+          "train_trades": 14,
+          "train_return": 46.80722354000004,
+          "train_sharpe": 11.261713261217764,
+          "test_trades": 7,
+          "test_return": 1.438216840000052,
+          "test_sharpe": 3.500524445272683,
+          "test_dd": 0.7931438399999897,
+          "yearly": {
+            "2025": {
+              "n_trades": 7,
+              "return": 0.01438216840000052,
+              "max_drawdown": 0.007931438399999897
+            }
+          }
+        },
+        {
+          "train_period": "2024-10 ~ 2025-03",
+          "test_period": "2025-04 ~ 2025-06",
+          "train_trades": 11,
+          "train_return": 8.298560660000048,
+          "train_sharpe": 4.274350704420596,
+          "test_trades": 12,
+          "test_return": 5.039580690000046,
+          "test_sharpe": 6.876481571811652,
+          "test_dd": 0.7768197394887604,
+          "yearly": {
+            "2025": {
+              "n_trades": 12,
+              "return": 0.050395806900000464,
+              "max_drawdown": 0.007768197394887604
+            }
+          }
+        },
+        {
+          "train_period": "2025-01 ~ 2025-06",
+          "test_period": "2025-07 ~ 2025-09",
+          "train_trades": 19,
+          "train_return": 9.310224860000075,
+          "train_sharpe": 7.465306340071434,
+          "test_trades": 14,
+          "test_return": 14.236191300000007,
+          "test_sharpe": 6.647301765792782,
+          "test_dd": 1.0538193349463911,
+          "yearly": {
+            "2025": {
+              "n_trades": 14,
+              "return": 0.14236191300000006,
+              "max_drawdown": 0.010538193349463912
+            }
+          }
+        },
+        {
+          "train_period": "2025-04 ~ 2025-09",
+          "test_period": "2025-10 ~ 2025-12",
+          "train_trades": 22,
+          "train_return": 17.790177810000067,
+          "train_sharpe": 5.777077570529488,
+          "test_trades": 6,
+          "test_return": -6.329622629999969,
+          "test_sharpe": -4.393770847589054,
+          "test_dd": 9.498896909999981,
+          "yearly": {
+            "2025": {
+              "n_trades": 6,
+              "return": -0.06329622629999969,
+              "max_drawdown": 0.0949889690999998
+            }
+          }
+        }
+      ]
+    }
+  },
+  "option_a_e7_3": {
+    "signals": 126,
+    "n_trades": 102,
+    "total_return": 2.668967949200004,
+    "sharpe": 4.668529803059522,
+    "wfa": {
+      "n_windows": 13,
+      "test_avg_return": 8.413325980769251,
+      "test_avg_sharpe": 6.125655302974858,
+      "positive_ratio": 0.8461538461538461,
+      "windows": [
+        {
+          "train_period": "2021-01 ~ 2021-06",
+          "test_period": "2021-07 ~ 2021-09",
+          "train_trades": 5,
+          "train_return": 6.308988490000019,
+          "train_sharpe": 8.47898676970756,
+          "test_trades": 3,
+          "test_return": 20.262812460000017,
+          "test_sharpe": 8.629037601329786,
+          "test_dd": 0.8399507999999914,
+          "yearly": {
+            "2021": {
+              "n_trades": 3,
+              "return": 0.20262812460000015,
+              "max_drawdown": 0.008399507999999915
+            }
+          }
+        },
+        {
+          "train_period": "2022-01 ~ 2022-06",
+          "test_period": "2022-07 ~ 2022-09",
+          "train_trades": 6,
+          "train_return": 4.444966200000009,
+          "train_sharpe": 3.5538214373519206,
+          "test_trades": 4,
+          "test_return": 4.595564270000017,
+          "test_sharpe": 8.368545222111939,
+          "test_dd": 0.301872158898703,
+          "yearly": {
+            "2022": {
+              "n_trades": 4,
+              "return": 0.045955642700000174,
+              "max_drawdown": 0.00301872158898703
+            }
+          }
+        },
+        {
+          "train_period": "2022-04 ~ 2022-09",
+          "test_period": "2022-10 ~ 2022-12",
+          "train_trades": 6,
+          "train_return": 10.86297742000001,
+          "train_sharpe": 14.314268787031924,
+          "test_trades": 8,
+          "test_return": 7.747586570000014,
+          "test_sharpe": 9.24419946398206,
+          "test_dd": 0.28043451290731825,
+          "yearly": {
+            "2022": {
+              "n_trades": 8,
+              "return": 0.07747586570000015,
+              "max_drawdown": 0.0028043451290731825
+            }
+          }
+        },
+        {
+          "train_period": "2022-07 ~ 2022-12",
+          "test_period": "2023-01 ~ 2023-03",
+          "train_trades": 12,
+          "train_return": 6.450448250000015,
+          "train_sharpe": 3.546402412658915,
+          "test_trades": 11,
+          "test_return": 12.699847230000014,
+          "test_sharpe": 8.483889446973327,
+          "test_dd": 1.3044602506414444,
+          "yearly": {
+            "2023": {
+              "n_trades": 11,
+              "return": 0.12699847230000014,
+              "max_drawdown": 0.013044602506414444
+            }
+          }
+        },
+        {
+          "train_period": "2023-01 ~ 2023-06",
+          "test_period": "2023-07 ~ 2023-09",
+          "train_trades": 11,
+          "train_return": 12.699847230000014,
+          "train_sharpe": 8.483889446973327,
+          "test_trades": 4,
+          "test_return": -0.5563492899999838,
+          "test_sharpe": -6.045932687738808,
+          "test_dd": 0.8266148636393765,
+          "yearly": {
+            "2023": {
+              "n_trades": 4,
+              "return": -0.005563492899999837,
+              "max_drawdown": 0.008266148636393765
+            }
+          }
+        },
+        {
+          "train_period": "2023-07 ~ 2023-12",
+          "test_period": "2024-01 ~ 2024-03",
+          "train_trades": 9,
+          "train_return": -8.759681789999958,
+          "train_sharpe": -5.492831436481171,
+          "test_trades": 3,
+          "test_return": 30.59676937000001,
+          "test_sharpe": 8.686247750843997,
+          "test_dd": 1.1292457900000008,
+          "yearly": {
+            "2024": {
+              "n_trades": 3,
+              "return": 0.3059676937000001,
+              "max_drawdown": 0.011292457900000009
+            }
+          }
+        },
+        {
+          "train_period": "2023-10 ~ 2024-03",
+          "test_period": "2024-04 ~ 2024-06",
+          "train_trades": 9,
+          "train_return": 35.17488095000002,
+          "train_sharpe": 5.783808461862253,
+          "test_trades": 4,
+          "test_return": 1.4747765400000208,
+          "test_sharpe": 7.653092104856249,
+          "test_dd": 0.4896499567630924,
+          "yearly": {
+            "2024": {
+              "n_trades": 4,
+              "return": 0.014747765400000208,
+              "max_drawdown": 0.004896499567630924
+            }
+          }
+        },
+        {
+          "train_period": "2024-01 ~ 2024-06",
+          "test_period": "2024-07 ~ 2024-09",
+          "train_trades": 7,
+          "train_return": 29.30186225000002,
+          "train_sharpe": 5.5231332052490245,
+          "test_trades": 10,
+          "test_return": 7.361039280000055,
+          "test_sharpe": 6.005965799298347,
+          "test_dd": 1.7642666599999939,
+          "yearly": {
+            "2024": {
+              "n_trades": 10,
+              "return": 0.07361039280000055,
+              "max_drawdown": 0.01764266659999994
+            }
+          }
+        },
+        {
+          "train_period": "2024-04 ~ 2024-09",
+          "test_period": "2024-10 ~ 2024-12",
+          "train_trades": 14,
+          "train_return": 1.352348050000015,
+          "train_sharpe": 0.9024863371429053,
+          "test_trades": 4,
+          "test_return": 10.06307633000001,
+          "test_sharpe": 11.030786707235052,
+          "test_dd": 0.08865425000000687,
+          "yearly": {
+            "2024": {
+              "n_trades": 4,
+              "return": 0.1006307633000001,
+              "max_drawdown": 0.0008865425000000687
+            }
+          }
+        },
+        {
+          "train_period": "2024-07 ~ 2024-12",
+          "test_period": "2025-01 ~ 2025-03",
+          "train_trades": 14,
+          "train_return": 46.80722354000004,
+          "train_sharpe": 11.261713261217764,
+          "test_trades": 3,
+          "test_return": 2.083591069999995,
+          "test_sharpe": 5.763516301577189,
+          "test_dd": 0.7931438399999897,
+          "yearly": {
+            "2025": {
+              "n_trades": 3,
+              "return": 0.02083591069999995,
+              "max_drawdown": 0.007931438399999897
+            }
+          }
+        },
+        {
+          "train_period": "2024-10 ~ 2025-03",
+          "test_period": "2025-04 ~ 2025-06",
+          "train_trades": 7,
+          "train_return": 8.988205420000027,
+          "train_sharpe": 5.699057807117789,
+          "test_trades": 8,
+          "test_return": 4.913555110000059,
+          "test_sharpe": 7.075153663028526,
+          "test_dd": 0.7434439800856787,
+          "yearly": {
+            "2025": {
+              "n_trades": 8,
+              "return": 0.04913555110000059,
+              "max_drawdown": 0.007434439800856786
+            }
+          }
+        },
+        {
+          "train_period": "2025-01 ~ 2025-06",
+          "test_period": "2025-07 ~ 2025-09",
+          "train_trades": 11,
+          "train_return": 5.193865310000052,
+          "train_sharpe": 4.746293454454712,
+          "test_trades": 10,
+          "test_return": 12.04175575000004,
+          "test_sharpe": 8.324859499533106,
+          "test_dd": 0.8917202611620347,
+          "yearly": {
+            "2025": {
+              "n_trades": 10,
+              "return": 0.1204175575000004,
+              "max_drawdown": 0.008917202611620347
+            }
+          }
+        },
+        {
+          "train_period": "2025-04 ~ 2025-09",
+          "test_period": "2025-10 ~ 2025-12",
+          "train_trades": 18,
+          "train_return": 17.952450030000065,
+          "train_sharpe": 7.742824644787768,
+          "test_trades": 5,
+          "test_return": -3.910786939999991,
+          "test_sharpe": -3.5858419343576102,
+          "test_dd": 7.163061799999997,
+          "yearly": {
+            "2025": {
+              "n_trades": 5,
+              "return": -0.03910786939999991,
+              "max_drawdown": 0.07163061799999997
+            }
+          }
+        }
+      ]
+    }
+  },
+  "option_b_rsi55": {
+    "signals": 67,
+    "n_trades": 58,
+    "total_return": 2.3526131915000033,
+    "sharpe": 6.091775669116407,
+    "wfa": {
+      "n_windows": 2,
+      "test_avg_return": 8.285010670000025,
+      "test_avg_sharpe": 11.853289443194111,
+      "positive_ratio": 1.0,
+      "windows": [
+        {
+          "train_period": "2022-07 ~ 2022-12",
+          "test_period": "2023-01 ~ 2023-03",
+          "train_trades": 9,
+          "train_return": 0.5842192100000393,
+          "train_sharpe": 0.7075130701621781,
+          "test_trades": 4,
+          "test_return": 5.971330490000022,
+          "test_sharpe": 16.324853424542198,
+          "test_dd": 0.05494499999999244,
+          "yearly": {
+            "2023": {
+              "n_trades": 4,
+              "return": 0.05971330490000022,
+              "max_drawdown": 0.0005494499999999244
+            }
+          }
+        },
+        {
+          "train_period": "2025-01 ~ 2025-06",
+          "test_period": "2025-07 ~ 2025-09",
+          "train_trades": 8,
+          "train_return": 11.540451080000043,
+          "train_sharpe": 10.643795041416682,
+          "test_trades": 12,
+          "test_return": 10.598690850000029,
+          "test_sharpe": 7.381725461846026,
+          "test_dd": 1.7375960078066393,
+          "yearly": {
+            "2025": {
+              "n_trades": 12,
+              "return": 0.10598690850000028,
+              "max_drawdown": 0.017375960078066393
+            }
+          }
+        }
+      ]
+    }
+  },
+  "option_c_combo": {
+    "signals": 39,
+    "n_trades": 39,
+    "total_return": 6.220304502200006,
+    "sharpe": 3.5757410580737923,
+    "wfa": {
+      "n_windows": 1,
+      "test_avg_return": 6.38975496000002,
+      "test_avg_sharpe": 17.826189852931172,
+      "positive_ratio": 1.0,
+      "windows": [
+        {
+          "train_period": "2022-07 ~ 2022-12",
+          "test_period": "2023-01 ~ 2023-03",
+          "train_trades": 8,
+          "train_return": 8.064514950000026,
+          "train_sharpe": 5.311545139626358,
+          "test_trades": 3,
+          "test_return": 6.38975496000002,
+          "test_sharpe": 17.826189852931172,
+          "test_dd": 0.05494499999999244,
+          "yearly": {
+            "2023": {
+              "n_trades": 3,
+              "return": 0.0638975496000002,
+              "max_drawdown": 0.0005494499999999244
+            }
+          }
+        }
+      ]
+    }
+  },
+  "candidates": [
+    {
+      "name": "Option A: E7=3%",
+      "score": 9.25186696742362,
+      "ret_diff": 1.515047574519226,
+      "sharpe_diff": 1.6806927536347516,
+      "pos_diff": 0.09615384615384615
+    },
+    {
+      "name": "Option B: RSI=55",
+      "score": 35.18800048091602,
+      "ret_diff": 1.38673226375,
+      "sharpe_diff": 7.408326893854005,
+      "pos_diff": 0.25
+    },
+    {
+      "name": "Option C: RSI=55 + E7=3%",
+      "score": 58.321499835864266,
+      "ret_diff": -0.5085234462500052,
+      "sharpe_diff": 13.381227303591066,
+      "pos_diff": 0.25
+    }
+  ],
+  "recommendation": "Option C: RSI=55 + E7=3%"
+}

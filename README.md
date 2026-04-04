@@ -280,10 +280,32 @@ python -m pytest tests/test_multi_cycle.py -v
 | `docs/comprehensive_system_design.md` | 完整系统设计 |
 | `docs/FAILURE_WARNING_SYSTEM.md` | 失败预警系统 |
 | `docs/STRATEGY_v1.4_FINAL.md` | 最终策略文档 |
+| `reports/PATTERN_1_ROBUSTNESS_VALIDATION_REPORT.md` | v1.1稳健性验证 |
+| `reports/PATTERN_1_OPTIMIZATION_VALIDATION_REPORT.md` | v1.1优化验证 |
 
 ---
 
 ## 核心结论
+
+### PATTERN_1 v1.1 稳健性验证
+
+经过五重验证，v1.1策略确认为稳健（非过拟合）：
+
+| 验证方法 | 结果 | 说明 |
+|---------|------|------|
+| Walk-Forward Analysis | ✅ 75%正收益 | 16窗口滚动验证 |
+| Monte Carlo模拟 | ✅ 原始排名51% | 1000次重采样 |
+| 参数Plateau检测 | ✅ E7极稳健 | -50%变化仅-1.1% Sharpe |
+| 扩展WFA | ✅ v1.1稳健 | 动态RSI与固定RSI=58等价 |
+| 敏感度分析 | ✅ E7稳健 | RSI偏高敏感但可接受 |
+
+**v1.1核心参数**:
+- 动态RSI上限: ATR<2%→58, 2-3%→57, >3%→55
+- E7价格过滤: price_above_ma20 >= 2%
+- RSI仓位调整: RSI<52→+20%, RSI>58→-30%
+- 市场宽度过滤: breadth_ma3 > 50%
+
+**优化验证**: E7=3%、RSI=55等方向经验证差异不显著，保持当前参数。
 
 ### 真正的起涨点
 

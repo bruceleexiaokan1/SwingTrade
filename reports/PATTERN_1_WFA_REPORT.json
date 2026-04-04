@@ -1,0 +1,49 @@
+{
+  "date": "2026-04-04",
+  "strategy": "PATTERN_1 v1.1",
+  "train_months": 6,
+  "test_months": 3,
+  "windows": [
+    {
+      "train_period": "2022-07 ~ 2022-12",
+      "test_period": "2023-01 ~ 2023-03",
+      "train_trades": 14,
+      "train_return": -1.255263409999956,
+      "train_dd": 5.706487811896817,
+      "test_trades": 8,
+      "test_return": 7.7109016700000215,
+      "test_dd": 0.049949099999998,
+      "yearly": {
+        "2023": {
+          "n_trades": 8,
+          "return": 0.07710901670000021,
+          "max_drawdown": 0.00049949099999998
+        }
+      }
+    },
+    {
+      "train_period": "2025-01 ~ 2025-06",
+      "test_period": "2025-07 ~ 2025-09",
+      "train_trades": 12,
+      "train_return": 6.923293520000065,
+      "train_dd": 1.7542180251479866,
+      "test_trades": 15,
+      "test_return": 13.888780810000027,
+      "test_dd": 0.6337769693555282,
+      "yearly": {
+        "2025": {
+          "n_trades": 15,
+          "return": 0.13888780810000026,
+          "max_drawdown": 0.006337769693555282
+        }
+      }
+    }
+  ],
+  "summary": {
+    "train_avg_return": 2.8340150550000547,
+    "test_avg_return": 10.799841240000024,
+    "positive_ratio": 1.0,
+    "decay_rate": 3.8107917673005502,
+    "verdict": "\u2705 WFA\u9a8c\u8bc1\u901a\u8fc7 - \u7b56\u7565\u7a33\u5065"
+  }
+}

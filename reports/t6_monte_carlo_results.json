@@ -1,0 +1,25 @@
+{
+  "date": "2026-04-04",
+  "strategy": "PATTERN_1 v1.1",
+  "monte_carlo": {
+    "original_return": 2.801242258300007,
+    "p10": 1.0844724066574591,
+    "p25": 1.7466596944828219,
+    "p50": 2.760689273813725,
+    "p75": 4.184375665190045,
+    "p90": 6.18671615352869,
+    "rank_percentile": 51.2,
+    "is_robust": true,
+    "n_simulations": 1000,
+    "n_trades": 94,
+    "n_days": 80
+  },
+  "bootstrap": {
+    "mean_return": 0.05608300543608503,
+    "ci_lower": 0.03227909388140011,
+    "ci_upper": 0.08131039365624175,
+    "n_bootstrap": 1000
+  },
+  "criteria_passed": 2,
+  "total_criteria": 2
+}

@@ -1,0 +1,921 @@
+{
+  "date": "2026-04-04",
+  "strategy": "PATTERN_1 v1.1",
+  "plateau_analysis": {
+    "is_plateau": "False",
+    "reason": "Narrow peak",
+    "best_params": {
+      "rsi_upper": 55,
+      "e7_threshold": 4.0,
+      "return": 7.655371623300004,
+      "sharpe": 6.356552486083202,
+      "max_drawdown": 0.21054317390742242
+    },
+    "neighbor_avg_return": 1.8684177228077963,
+    "neighbor_min_return": -0.1080506997999997,
+    "neighbor_count": 77,
+    "decay_rate": 0.7559337658904693
+  },
+  "grid_results": [
+    {
+      "rsi_upper": 53,
+      "e7_threshold": 0.5,
+      "n_signals": 0,
+      "n_trades": 0,
+      "return": null,
+      "sharpe": null,
+      "max_drawdown": null
+    },
+    {
+      "rsi_upper": 53,
+      "e7_threshold": 1.0,
+      "n_signals": 0,
+      "n_trades": 0,
+      "return": null,
+      "sharpe": null,
+      "max_drawdown": null
+    },
+    {
+      "rsi_upper": 53,
+      "e7_threshold": 1.5,
+      "n_signals": 0,
+      "n_trades": 0,
+      "return": null,
+      "sharpe": null,
+      "max_drawdown": null
+    },
+    {
+      "rsi_upper": 53,
+      "e7_threshold": 2.0,
+      "n_signals": 0,
+      "n_trades": 0,
+      "return": null,
+      "sharpe": null,
+      "max_drawdown": null
+    },
+    {
+      "rsi_upper": 53,
+      "e7_threshold": 2.5,
+      "n_signals": 0,
+      "n_trades": 0,
+      "return": null,
+      "sharpe": null,
+      "max_drawdown": null
+    },
+    {
+      "rsi_upper": 53,
+      "e7_threshold": 3.0,
+      "n_signals": 0,
+      "n_trades": 0,
+      "return": null,
+      "sharpe": null,
+      "max_drawdown": null
+    },
+    {
+      "rsi_upper": 53,
+      "e7_threshold": 3.5,
+      "n_signals": 0,
+      "n_trades": 0,
+      "return": null,
+      "sharpe": null,
+      "max_drawdown": null
+    },
+    {
+      "rsi_upper": 53,
+      "e7_threshold": 4.0,
+      "n_signals": 0,
+      "n_trades": 0,
+      "return": null,
+      "sharpe": null,
+      "max_drawdown": null
+    },
+    {
+      "rsi_upper": 53,
+      "e7_threshold": 4.5,
+      "n_signals": 0,
+      "n_trades": 0,
+      "return": null,
+      "sharpe": null,
+      "max_drawdown": null
+    },
+    {
+      "rsi_upper": 53,
+      "e7_threshold": 5.0,
+      "n_signals": 0,
+      "n_trades": 0,
+      "return": null,
+      "sharpe": null,
+      "max_drawdown": null
+    },
+    {
+      "rsi_upper": 54,
+      "e7_threshold": 0.5,
+      "n_signals": 23,
+      "n_trades": 23,
+      "return": 0.7172968515000009,
+      "sharpe": 4.487731924977348,
+      "max_drawdown": 0.2328863323525014
+    },
+    {
+      "rsi_upper": 54,
+      "e7_threshold": 1.0,
+      "n_signals": 23,
+      "n_trades": 23,
+      "return": 0.7172968515000009,
+      "sharpe": 4.487731924977348,
+      "max_drawdown": 0.2328863323525014
+    },
+    {
+      "rsi_upper": 54,
+      "e7_threshold": 1.5,
+      "n_signals": 22,
+      "n_trades": 22,
+      "return": 0.7044130282000004,
+      "sharpe": 4.551925530431327,
+      "max_drawdown": 0.2328863323525014
+    },
+    {
+      "rsi_upper": 54,
+      "e7_threshold": 2.0,
+      "n_signals": 22,
+      "n_trades": 22,
+      "return": 0.7044130282000004,
+      "sharpe": 4.551925530431327,
+      "max_drawdown": 0.2328863323525014
+    },
+    {
+      "rsi_upper": 54,
+      "e7_threshold": 2.5,
+      "n_signals": 18,
+      "n_trades": 18,
+      "return": 0.9392547422000012,
+      "sharpe": 6.426243555741698,
+      "max_drawdown": 0.21052328141609583
+    },
+    {
+      "rsi_upper": 54,
+      "e7_threshold": 3.0,
+      "n_signals": 13,
+      "n_trades": 13,
+      "return": 0.7592368553000007,
+      "sharpe": 6.735084758297198,
+      "max_drawdown": 0.21052328141609583
+    },
+    {
+      "rsi_upper": 54,
+      "e7_threshold": 3.5,
+      "n_signals": 11,
+      "n_trades": 11,
+      "return": 0.8574921080000006,
+      "sharpe": 7.013192069876793,
+      "max_drawdown": 0.21053649149206882
+    },
+    {
+      "rsi_upper": 54,
+      "e7_threshold": 4.0,
+      "n_signals": 0,
+      "n_trades": 0,
+      "return": null,
+      "sharpe": null,
+      "max_drawdown": null
+    },
+    {
+      "rsi_upper": 54,
+      "e7_threshold": 4.5,
+      "n_signals": 0,
+      "n_trades": 0,
+      "return": null,
+      "sharpe": null,
+      "max_drawdown": null
+    },
+    {
+      "rsi_upper": 54,
+      "e7_threshold": 5.0,
+      "n_signals": 0,
+      "n_trades": 0,
+      "return": null,
+      "sharpe": null,
+      "max_drawdown": null
+    },
+    {
+      "rsi_upper": 55,
+      "e7_threshold": 0.5,
+      "n_signals": 47,
+      "n_trades": 42,
+      "return": 4.692759311600005,
+      "sharpe": 3.4893070364616827,
+      "max_drawdown": 0.15398050308660494
+    },
+    {
+      "rsi_upper": 55,
+      "e7_threshold": 1.0,
+      "n_signals": 47,
+      "n_trades": 42,
+      "return": 4.692759311600005,
+      "sharpe": 3.4893070364616827,
+      "max_drawdown": 0.15398050308660494
+    },
+    {
+      "rsi_upper": 55,
+      "e7_threshold": 1.5,
+      "n_signals": 46,
+      "n_trades": 42,
+      "return": 4.692759311600005,
+      "sharpe": 3.5359173131035058,
+      "max_drawdown": 0.15398050308660494
+    },
+    {
+      "rsi_upper": 55,
+      "e7_threshold": 2.0,
+      "n_signals": 45,
+      "n_trades": 41,
+      "return": 4.726332176600004,
+      "sharpe": 3.54416449417023,
+      "max_drawdown": 0.1539785241307221
+    },
+    {
+      "rsi_upper": 55,
+      "e7_threshold": 2.5,
+      "n_signals": 39,
+      "n_trades": 38,
+      "return": 5.434204586000005,
+      "sharpe": 3.9286533935695678,
+      "max_drawdown": 0.1898572509220548
+    },
+    {
+      "rsi_upper": 55,
+      "e7_threshold": 3.0,
+      "n_signals": 27,
+      "n_trades": 27,
+      "return": 6.348455304900006,
+      "sharpe": 4.31200108722434,
+      "max_drawdown": 0.12924383413638083
+    },
+    {
+      "rsi_upper": 55,
+      "e7_threshold": 3.5,
+      "n_signals": 21,
+      "n_trades": 21,
+      "return": 4.616637344400003,
+      "sharpe": 4.560821410711555,
+      "max_drawdown": 0.1989600113087054
+    },
+    {
+      "rsi_upper": 55,
+      "e7_threshold": 4.0,
+      "n_signals": 15,
+      "n_trades": 15,
+      "return": 7.655371623300004,
+      "sharpe": 6.356552486083202,
+      "max_drawdown": 0.21054317390742242
+    },
+    {
+      "rsi_upper": 55,
+      "e7_threshold": 4.5,
+      "n_signals": 0,
+      "n_trades": 0,
+      "return": null,
+      "sharpe": null,
+      "max_drawdown": null
+    },
+    {
+      "rsi_upper": 55,
+      "e7_threshold": 5.0,
+      "n_signals": 0,
+      "n_trades": 0,
+      "return": null,
+      "sharpe": null,
+      "max_drawdown": null
+    },
+    {
+      "rsi_upper": 56,
+      "e7_threshold": 0.5,
+      "n_signals": 74,
+      "n_trades": 63,
+      "return": 2.3153947993000075,
+      "sharpe": 5.069898456735381,
+      "max_drawdown": 0.0744924703547487
+    },
+    {
+      "rsi_upper": 56,
+      "e7_threshold": 1.0,
+      "n_signals": 74,
+      "n_trades": 63,
+      "return": 2.3153947993000075,
+      "sharpe": 5.069898456735381,
+      "max_drawdown": 0.0744924703547487
+    },
+    {
+      "rsi_upper": 56,
+      "e7_threshold": 1.5,
+      "n_signals": 73,
+      "n_trades": 63,
+      "return": 2.3153947993000075,
+      "sharpe": 5.123103942783678,
+      "max_drawdown": 0.0744924703547487
+    },
+    {
+      "rsi_upper": 56,
+      "e7_threshold": 2.0,
+      "n_signals": 71,
+      "n_trades": 62,
+      "return": 2.329536772000004,
+      "sharpe": 5.194517654832987,
+      "max_drawdown": 0.07449188469842916
+    },
+    {
+      "rsi_upper": 56,
+      "e7_threshold": 2.5,
+      "n_signals": 61,
+      "n_trades": 56,
+      "return": 2.4374481517000053,
+      "sharpe": 5.834852196912529,
+      "max_drawdown": 0.07449333755229531
+    },
+    {
+      "rsi_upper": 56,
+      "e7_threshold": 3.0,
+      "n_signals": 45,
+      "n_trades": 44,
+      "return": 3.0401671651000024,
+      "sharpe": 7.092366768968486,
+      "max_drawdown": 0.10497655929434091
+    },
+    {
+      "rsi_upper": 56,
+      "e7_threshold": 3.5,
+      "n_signals": 34,
+      "n_trades": 34,
+      "return": 2.2317190273000023,
+      "sharpe": 7.364960615690552,
+      "max_drawdown": 0.1499569142446916
+    },
+    {
+      "rsi_upper": 56,
+      "e7_threshold": 4.0,
+      "n_signals": 22,
+      "n_trades": 22,
+      "return": 7.012383941400002,
+      "sharpe": 7.670334535069244,
+      "max_drawdown": 0.12690094274073246
+    },
+    {
+      "rsi_upper": 56,
+      "e7_threshold": 4.5,
+      "n_signals": 11,
+      "n_trades": 11,
+      "return": 6.070364795800002,
+      "sharpe": 6.470612100391699,
+      "max_drawdown": 0.11065632678267247
+    },
+    {
+      "rsi_upper": 56,
+      "e7_threshold": 5.0,
+      "n_signals": 0,
+      "n_trades": 0,
+      "return": null,
+      "sharpe": null,
+      "max_drawdown": null
+    },
+    {
+      "rsi_upper": 57,
+      "e7_threshold": 0.5,
+      "n_signals": 104,
+      "n_trades": 86,
+      "return": 2.2411434683000073,
+      "sharpe": 4.304357024428927,
+      "max_drawdown": 0.09046192418234912
+    },
+    {
+      "rsi_upper": 57,
+      "e7_threshold": 1.0,
+      "n_signals": 104,
+      "n_trades": 86,
+      "return": 2.2411434683000073,
+      "sharpe": 4.304357024428927,
+      "max_drawdown": 0.09046192418234912
+    },
+    {
+      "rsi_upper": 57,
+      "e7_threshold": 1.5,
+      "n_signals": 103,
+      "n_trades": 86,
+      "return": 2.2411434683000073,
+      "sharpe": 4.336860421815507,
+      "max_drawdown": 0.09046192418234912
+    },
+    {
+      "rsi_upper": 57,
+      "e7_threshold": 2.0,
+      "n_signals": 101,
+      "n_trades": 84,
+      "return": 2.206162772400006,
+      "sharpe": 4.331607853657855,
+      "max_drawdown": 0.0904580480860094
+    },
+    {
+      "rsi_upper": 57,
+      "e7_threshold": 2.5,
+      "n_signals": 89,
+      "n_trades": 75,
+      "return": 2.617613125300007,
+      "sharpe": 5.201953762658658,
+      "max_drawdown": 0.06736204921996991
+    },
+    {
+      "rsi_upper": 57,
+      "e7_threshold": 3.0,
+      "n_signals": 67,
+      "n_trades": 64,
+      "return": 3.1596713565000063,
+      "sharpe": 6.200665489474205,
+      "max_drawdown": 0.08097750733745508
+    },
+    {
+      "rsi_upper": 57,
+      "e7_threshold": 3.5,
+      "n_signals": 53,
+      "n_trades": 51,
+      "return": 2.279348964100004,
+      "sharpe": 7.544034167215384,
+      "max_drawdown": 0.07748197751915828
+    },
+    {
+      "rsi_upper": 57,
+      "e7_threshold": 4.0,
+      "n_signals": 31,
+      "n_trades": 30,
+      "return": 6.1342324037000076,
+      "sharpe": 6.667267144122521,
+      "max_drawdown": 0.115443443083561
+    },
+    {
+      "rsi_upper": 57,
+      "e7_threshold": 4.5,
+      "n_signals": 17,
+      "n_trades": 17,
+      "return": 5.0720551250000065,
+      "sharpe": 5.15481635631883,
+      "max_drawdown": 0.19354004841992464
+    },
+    {
+      "rsi_upper": 57,
+      "e7_threshold": 5.0,
+      "n_signals": 10,
+      "n_trades": 10,
+      "return": -0.1080506997999997,
+      "sharpe": -3.086481985267082,
+      "max_drawdown": 0.22617949082182318
+    },
+    {
+      "rsi_upper": 58,
+      "e7_threshold": 0.5,
+      "n_signals": 160,
+      "n_trades": 125,
+      "return": 1.9503603375000065,
+      "sharpe": 3.973854657474148,
+      "max_drawdown": 0.1423320261316825
+    },
+    {
+      "rsi_upper": 58,
+      "e7_threshold": 1.0,
+      "n_signals": 160,
+      "n_trades": 125,
+      "return": 1.9503603375000065,
+      "sharpe": 3.973854657474148,
+      "max_drawdown": 0.1423320261316825
+    },
+    {
+      "rsi_upper": 58,
+      "e7_threshold": 1.5,
+      "n_signals": 159,
+      "n_trades": 125,
+      "return": 1.9503603375000065,
+      "sharpe": 3.993392964785989,
+      "max_drawdown": 0.1423320261316825
+    },
+    {
+      "rsi_upper": 58,
+      "e7_threshold": 2.0,
+      "n_signals": 156,
+      "n_trades": 122,
+      "return": 1.9508172483000077,
+      "sharpe": 4.019239503617283,
+      "max_drawdown": 0.1368806200053551
+    },
+    {
+      "rsi_upper": 58,
+      "e7_threshold": 2.5,
+      "n_signals": 141,
+      "n_trades": 112,
+      "return": 2.124284705600004,
+      "sharpe": 4.524140494632187,
+      "max_drawdown": 0.12280416223927364
+    },
+    {
+      "rsi_upper": 58,
+      "e7_threshold": 3.0,
+      "n_signals": 111,
+      "n_trades": 99,
+      "return": 3.016697453800006,
+      "sharpe": 5.585002635770983,
+      "max_drawdown": 0.12280072130516355
+    },
+    {
+      "rsi_upper": 58,
+      "e7_threshold": 3.5,
+      "n_signals": 86,
+      "n_trades": 79,
+      "return": 2.541591437300004,
+      "sharpe": 5.5824327942619165,
+      "max_drawdown": 0.11696386028120713
+    },
+    {
+      "rsi_upper": 58,
+      "e7_threshold": 4.0,
+      "n_signals": 51,
+      "n_trades": 47,
+      "return": 4.130662570300005,
+      "sharpe": 8.477970720555888,
+      "max_drawdown": 0.11404463359210658
+    },
+    {
+      "rsi_upper": 58,
+      "e7_threshold": 4.5,
+      "n_signals": 34,
+      "n_trades": 33,
+      "return": 1.7798375140000025,
+      "sharpe": 10.79343950777812,
+      "max_drawdown": 0.10628207378909038
+    },
+    {
+      "rsi_upper": 58,
+      "e7_threshold": 5.0,
+      "n_signals": 20,
+      "n_trades": 20,
+      "return": 0.4207216742000013,
+      "sharpe": 6.436546128912435,
+      "max_drawdown": 0.19604974786291088
+    },
+    {
+      "rsi_upper": 59,
+      "e7_threshold": 0.5,
+      "n_signals": 218,
+      "n_trades": 153,
+      "return": 1.076641653800006,
+      "sharpe": 2.693711903093414,
+      "max_drawdown": 0.12345949272073818
+    },
+    {
+      "rsi_upper": 59,
+      "e7_threshold": 1.0,
+      "n_signals": 218,
+      "n_trades": 153,
+      "return": 1.076641653800006,
+      "sharpe": 2.693711903093414,
+      "max_drawdown": 0.12345949272073818
+    },
+    {
+      "rsi_upper": 59,
+      "e7_threshold": 1.5,
+      "n_signals": 217,
+      "n_trades": 153,
+      "return": 1.076641653800006,
+      "sharpe": 2.703637314604388,
+      "max_drawdown": 0.12345949272073818
+    },
+    {
+      "rsi_upper": 59,
+      "e7_threshold": 2.0,
+      "n_signals": 212,
+      "n_trades": 151,
+      "return": 1.152277264300004,
+      "sharpe": 2.7825795052248234,
+      "max_drawdown": 0.12163184306138311
+    },
+    {
+      "rsi_upper": 59,
+      "e7_threshold": 2.5,
+      "n_signals": 194,
+      "n_trades": 143,
+      "return": 1.1746153235000059,
+      "sharpe": 2.8951148250127456,
+      "max_drawdown": 0.14632617422979272
+    },
+    {
+      "rsi_upper": 59,
+      "e7_threshold": 3.0,
+      "n_signals": 155,
+      "n_trades": 123,
+      "return": 1.4154265218000073,
+      "sharpe": 3.3982217608344083,
+      "max_drawdown": 0.11816004630650101
+    },
+    {
+      "rsi_upper": 59,
+      "e7_threshold": 3.5,
+      "n_signals": 126,
+      "n_trades": 104,
+      "return": 1.0444083144000045,
+      "sharpe": 3.288478767078565,
+      "max_drawdown": 0.12877408434764978
+    },
+    {
+      "rsi_upper": 59,
+      "e7_threshold": 4.0,
+      "n_signals": 77,
+      "n_trades": 64,
+      "return": 2.007419365300004,
+      "sharpe": 6.232554584630819,
+      "max_drawdown": 0.11912693121504486
+    },
+    {
+      "rsi_upper": 59,
+      "e7_threshold": 4.5,
+      "n_signals": 53,
+      "n_trades": 47,
+      "return": 1.1081592002000022,
+      "sharpe": 7.177854055005316,
+      "max_drawdown": 0.1128814865950057
+    },
+    {
+      "rsi_upper": 59,
+      "e7_threshold": 5.0,
+      "n_signals": 32,
+      "n_trades": 29,
+      "return": 0.12203117480000161,
+      "sharpe": 2.192704192428736,
+      "max_drawdown": 0.19604974786291088
+    },
+    {
+      "rsi_upper": 60,
+      "e7_threshold": 0.5,
+      "n_signals": 301,
+      "n_trades": 178,
+      "return": 1.0589469112000058,
+      "sharpe": 2.3112622883999627,
+      "max_drawdown": 0.13433475532283976
+    },
+    {
+      "rsi_upper": 60,
+      "e7_threshold": 1.0,
+      "n_signals": 301,
+      "n_trades": 178,
+      "return": 1.0589469112000058,
+      "sharpe": 2.3112622883999627,
+      "max_drawdown": 0.13433475532283976
+    },
+    {
+      "rsi_upper": 60,
+      "e7_threshold": 1.5,
+      "n_signals": 300,
+      "n_trades": 178,
+      "return": 1.0589469112000058,
+      "sharpe": 2.3187941374078314,
+      "max_drawdown": 0.13433475532283976
+    },
+    {
+      "rsi_upper": 60,
+      "e7_threshold": 2.0,
+      "n_signals": 293,
+      "n_trades": 175,
+      "return": 1.201848142000004,
+      "sharpe": 2.3511704088673,
+      "max_drawdown": 0.13432006352269268
+    },
+    {
+      "rsi_upper": 60,
+      "e7_threshold": 2.5,
+      "n_signals": 273,
+      "n_trades": 169,
+      "return": 1.3603638566000056,
+      "sharpe": 2.593021460443871,
+      "max_drawdown": 0.13431972064795766
+    },
+    {
+      "rsi_upper": 60,
+      "e7_threshold": 3.0,
+      "n_signals": 228,
+      "n_trades": 148,
+      "return": 1.6787646913000063,
+      "sharpe": 3.1554677939973663,
+      "max_drawdown": 0.1343279306597784
+    },
+    {
+      "rsi_upper": 60,
+      "e7_threshold": 3.5,
+      "n_signals": 182,
+      "n_trades": 131,
+      "return": 1.1710625333000038,
+      "sharpe": 2.9381256214273,
+      "max_drawdown": 0.15481052968083417
+    },
+    {
+      "rsi_upper": 60,
+      "e7_threshold": 4.0,
+      "n_signals": 120,
+      "n_trades": 91,
+      "return": 2.122857993000004,
+      "sharpe": 5.325751516004096,
+      "max_drawdown": 0.11788080582719491
+    },
+    {
+      "rsi_upper": 60,
+      "e7_threshold": 4.5,
+      "n_signals": 82,
+      "n_trades": 66,
+      "return": 1.0358872954000022,
+      "sharpe": 4.712655692699169,
+      "max_drawdown": 0.11108013504651466
+    },
+    {
+      "rsi_upper": 60,
+      "e7_threshold": 5.0,
+      "n_signals": 57,
+      "n_trades": 48,
+      "return": 0.26841876330000203,
+      "sharpe": 2.539090436395839,
+      "max_drawdown": 0.22767432244854297
+    },
+    {
+      "rsi_upper": 61,
+      "e7_threshold": 0.5,
+      "n_signals": 394,
+      "n_trades": 197,
+      "return": 0.8560577377000058,
+      "sharpe": 1.9649627432427141,
+      "max_drawdown": 0.15614841248706993
+    },
+    {
+      "rsi_upper": 61,
+      "e7_threshold": 1.0,
+      "n_signals": 394,
+      "n_trades": 197,
+      "return": 0.8560577377000058,
+      "sharpe": 1.9649627432427141,
+      "max_drawdown": 0.15614841248706993
+    },
+    {
+      "rsi_upper": 61,
+      "e7_threshold": 1.5,
+      "n_signals": 393,
+      "n_trades": 197,
+      "return": 0.8560577377000058,
+      "sharpe": 1.9711923362285575,
+      "max_drawdown": 0.15614841248706993
+    },
+    {
+      "rsi_upper": 61,
+      "e7_threshold": 2.0,
+      "n_signals": 386,
+      "n_trades": 197,
+      "return": 0.9061542049000054,
+      "sharpe": 2.0289723182776966,
+      "max_drawdown": 0.15580990041976092
+    },
+    {
+      "rsi_upper": 61,
+      "e7_threshold": 2.5,
+      "n_signals": 363,
+      "n_trades": 190,
+      "return": 1.0519400341000065,
+      "sharpe": 2.2807360345367322,
+      "max_drawdown": 0.14512676644650352
+    },
+    {
+      "rsi_upper": 61,
+      "e7_threshold": 3.0,
+      "n_signals": 310,
+      "n_trades": 176,
+      "return": 1.519968837000003,
+      "sharpe": 2.976726248394989,
+      "max_drawdown": 0.1343283576064925
+    },
+    {
+      "rsi_upper": 61,
+      "e7_threshold": 3.5,
+      "n_signals": 253,
+      "n_trades": 160,
+      "return": 0.9279884705000051,
+      "sharpe": 2.4033900659882677,
+      "max_drawdown": 0.15042314310536126
+    },
+    {
+      "rsi_upper": 61,
+      "e7_threshold": 4.0,
+      "n_signals": 174,
+      "n_trades": 123,
+      "return": 2.3198895433000075,
+      "sharpe": 5.104681208268714,
+      "max_drawdown": 0.1234603602274909
+    },
+    {
+      "rsi_upper": 61,
+      "e7_threshold": 4.5,
+      "n_signals": 123,
+      "n_trades": 92,
+      "return": 0.9031626508000019,
+      "sharpe": 4.090863605471911,
+      "max_drawdown": 0.11267965232226071
+    },
+    {
+      "rsi_upper": 61,
+      "e7_threshold": 5.0,
+      "n_signals": 86,
+      "n_trades": 72,
+      "return": 0.23543011940000141,
+      "sharpe": 1.9429545286788217,
+      "max_drawdown": 0.2490667639155789
+    },
+    {
+      "rsi_upper": 62,
+      "e7_threshold": 0.5,
+      "n_signals": 524,
+      "n_trades": 218,
+      "return": 0.41717849450000444,
+      "sharpe": 1.1367004161015102,
+      "max_drawdown": 0.16830211961278949
+    },
+    {
+      "rsi_upper": 62,
+      "e7_threshold": 1.0,
+      "n_signals": 524,
+      "n_trades": 218,
+      "return": 0.41717849450000444,
+      "sharpe": 1.1367004161015102,
+      "max_drawdown": 0.16830211961278949
+    },
+    {
+      "rsi_upper": 62,
+      "e7_threshold": 1.5,
+      "n_signals": 522,
+      "n_trades": 218,
+      "return": 0.41717849450000444,
+      "sharpe": 1.1367004161015102,
+      "max_drawdown": 0.16830211961278949
+    },
+    {
+      "rsi_upper": 62,
+      "e7_threshold": 2.0,
+      "n_signals": 514,
+      "n_trades": 221,
+      "return": 0.5231710066000037,
+      "sharpe": 1.3200869686948906,
+      "max_drawdown": 0.16840774317425306
+    },
+    {
+      "rsi_upper": 62,
+      "e7_threshold": 2.5,
+      "n_signals": 484,
+      "n_trades": 215,
+      "return": 0.7021281472000049,
+      "sharpe": 1.634420200884583,
+      "max_drawdown": 0.16665324427866018
+    },
+    {
+      "rsi_upper": 62,
+      "e7_threshold": 3.0,
+      "n_signals": 422,
+      "n_trades": 206,
+      "return": 0.9998340920000064,
+      "sharpe": 2.132614400053059,
+      "max_drawdown": 0.14118455867746144
+    },
+    {
+      "rsi_upper": 62,
+      "e7_threshold": 3.5,
+      "n_signals": 352,
+      "n_trades": 187,
+      "return": 0.7171243462000042,
+      "sharpe": 1.8543188983083863,
+      "max_drawdown": 0.13893648024538957
+    },
+    {
+      "rsi_upper": 62,
+      "e7_threshold": 4.0,
+      "n_signals": 252,
+      "n_trades": 159,
+      "return": 1.877921243900007,
+      "sharpe": 3.9893878312389757,
+      "max_drawdown": 0.09261639075908418
+    },
+    {
+      "rsi_upper": 62,
+      "e7_threshold": 4.5,
+      "n_signals": 178,
+      "n_trades": 121,
+      "return": 1.2410662321000054,
+      "sharpe": 4.113918792445475,
+      "max_drawdown": 0.12998289185336254
+    },
+    {
+      "rsi_upper": 62,
+      "e7_threshold": 5.0,
+      "n_signals": 126,
+      "n_trades": 94,
+      "return": 0.8740818860000035,
+      "sharpe": 3.8997982758707614,
+      "max_drawdown": 0.1523347105829786
+    }
+  ]
+}

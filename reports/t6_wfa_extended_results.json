@@ -1,0 +1,632 @@
+{
+  "date": "2026-04-04",
+  "strategy": "PATTERN_1 \u53c2\u6570\u5bf9\u6bd4",
+  "v11_wfa": {
+    "windows": [
+      {
+        "train_period": "2021-01 ~ 2021-06",
+        "test_period": "2021-07 ~ 2021-09",
+        "train_trades": 8,
+        "train_return": 6.648527549999998,
+        "train_dd": 1.1250011899999954,
+        "test_trades": 5,
+        "test_return": 26.66402783000002,
+        "test_dd": 0.8399507999999914,
+        "yearly": {
+          "2021": {
+            "n_trades": 5,
+            "return": 0.2666402783000002,
+            "max_drawdown": 0.008399507999999915
+          }
+        }
+      },
+      {
+        "train_period": "2021-04 ~ 2021-09",
+        "test_period": "2021-10 ~ 2021-12",
+        "train_trades": 13,
+        "train_return": 47.435599980000056,
+        "train_dd": 1.1250011899999954,
+        "test_trades": 3,
+        "test_return": 8.700248640000005,
+        "test_dd": 0.04994795999999042,
+        "yearly": {
+          "2021": {
+            "n_trades": 3,
+            "return": 0.08700248640000005,
+            "max_drawdown": 0.0004994795999999042
+          }
+        }
+      },
+      {
+        "train_period": "2021-07 ~ 2021-12",
+        "test_period": "2022-01 ~ 2022-03",
+        "train_trades": 8,
+        "train_return": 24.97816516000003,
+        "train_dd": 9.272672353166854,
+        "test_trades": 10,
+        "test_return": -5.926559009999983,
+        "test_dd": 5.926559009999983,
+        "yearly": {
+          "2022": {
+            "n_trades": 10,
+            "return": -0.05926559009999983,
+            "max_drawdown": 0.05926559009999983
+          }
+        }
+      },
+      {
+        "train_period": "2022-01 ~ 2022-06",
+        "test_period": "2022-07 ~ 2022-09",
+        "train_trades": 12,
+        "train_return": -9.38091162999999,
+        "train_dd": 11.690570189999985,
+        "test_trades": 6,
+        "test_return": 3.765102100000018,
+        "test_dd": 0.301872158898703,
+        "yearly": {
+          "2022": {
+            "n_trades": 6,
+            "return": 0.03765102100000018,
+            "max_drawdown": 0.00301872158898703
+          }
+        }
+      },
+      {
+        "train_period": "2022-04 ~ 2022-09",
+        "test_period": "2022-10 ~ 2022-12",
+        "train_trades": 8,
+        "train_return": 9.982831020000011,
+        "train_dd": 0.30184890430529143,
+        "test_trades": 9,
+        "test_return": -0.8308258999999816,
+        "test_dd": 1.9310364377092664,
+        "yearly": {
+          "2022": {
+            "n_trades": 9,
+            "return": -0.008308258999999816,
+            "max_drawdown": 0.019310364377092663
+          }
+        }
+      },
+      {
+        "train_period": "2022-07 ~ 2022-12",
+        "test_period": "2023-01 ~ 2023-03",
+        "train_trades": 15,
+        "train_return": -3.2506803399999624,
+        "train_dd": 6.808986041665241,
+        "test_trades": 12,
+        "test_return": 12.698452970000027,
+        "test_dd": 1.3044602506414444,
+        "yearly": {
+          "2023": {
+            "n_trades": 12,
+            "return": 0.12698452970000026,
+            "max_drawdown": 0.013044602506414444
+          }
+        }
+      },
+      {
+        "train_period": "2023-01 ~ 2023-06",
+        "test_period": "2023-07 ~ 2023-09",
+        "train_trades": 12,
+        "train_return": 12.698452970000027,
+        "train_dd": 1.3044602506414444,
+        "test_trades": 6,
+        "test_return": -1.3479570799999638,
+        "test_dd": 2.8054063597659424,
+        "yearly": {
+          "2023": {
+            "n_trades": 6,
+            "return": -0.013479570799999637,
+            "max_drawdown": 0.028054063597659423
+          }
+        }
+      },
+      {
+        "train_period": "2023-04 ~ 2023-09",
+        "test_period": "2023-10 ~ 2023-12",
+        "train_trades": 6,
+        "train_return": -1.3479570799999638,
+        "train_dd": 2.8054063597659424,
+        "test_trades": 8,
+        "test_return": 2.27216167000003,
+        "test_dd": 7.291977098094591,
+        "yearly": {
+          "2023": {
+            "n_trades": 8,
+            "return": 0.022721616700000304,
+            "max_drawdown": 0.07291977098094592
+          }
+        }
+      },
+      {
+        "train_period": "2023-07 ~ 2023-12",
+        "test_period": "2024-01 ~ 2024-03",
+        "train_trades": 14,
+        "train_return": -2.630146179999967,
+        "train_dd": 10.834967519602039,
+        "test_trades": 3,
+        "test_return": 30.59676937000001,
+        "test_dd": 1.1292457900000008,
+        "yearly": {
+          "2024": {
+            "n_trades": 3,
+            "return": 0.3059676937000001,
+            "max_drawdown": 0.011292457900000009
+          }
+        }
+      },
+      {
+        "train_period": "2023-10 ~ 2024-03",
+        "test_period": "2024-04 ~ 2024-06",
+        "train_trades": 11,
+        "train_return": 32.85120790000004,
+        "train_dd": 7.291977098094591,
+        "test_trades": 5,
+        "test_return": 1.9725521000000152,
+        "test_dd": 0.30916255337028176,
+        "yearly": {
+          "2024": {
+            "n_trades": 5,
+            "return": 0.019725521000000152,
+            "max_drawdown": 0.0030916255337028174
+          }
+        }
+      },
+      {
+        "train_period": "2024-01 ~ 2024-06",
+        "test_period": "2024-07 ~ 2024-09",
+        "train_trades": 8,
+        "train_return": 29.936231160000027,
+        "train_dd": 2.508183560590021,
+        "test_trades": 10,
+        "test_return": 7.361039280000055,
+        "test_dd": 1.7642666599999939,
+        "yearly": {
+          "2024": {
+            "n_trades": 10,
+            "return": 0.07361039280000055,
+            "max_drawdown": 0.01764266659999994
+          }
+        }
+      },
+      {
+        "train_period": "2024-04 ~ 2024-09",
+        "test_period": "2024-10 ~ 2024-12",
+        "train_trades": 15,
+        "train_return": 2.081248440000025,
+        "train_dd": 8.402082348196915,
+        "test_trades": 4,
+        "test_return": 10.06307633000001,
+        "test_dd": 0.08865425000000687,
+        "yearly": {
+          "2024": {
+            "n_trades": 4,
+            "return": 0.1006307633000001,
+            "max_drawdown": 0.0008865425000000687
+          }
+        }
+      },
+      {
+        "train_period": "2024-07 ~ 2024-12",
+        "test_period": "2025-01 ~ 2025-03",
+        "train_trades": 14,
+        "train_return": 46.80722354000004,
+        "train_dd": 1.7642666599999939,
+        "test_trades": 7,
+        "test_return": 1.438216840000052,
+        "test_dd": 0.7931438399999897,
+        "yearly": {
+          "2025": {
+            "n_trades": 7,
+            "return": 0.01438216840000052,
+            "max_drawdown": 0.007931438399999897
+          }
+        }
+      },
+      {
+        "train_period": "2024-10 ~ 2025-03",
+        "test_period": "2025-04 ~ 2025-06",
+        "train_trades": 11,
+        "train_return": 8.298560660000048,
+        "train_dd": 3.768677106174411,
+        "test_trades": 12,
+        "test_return": 5.039580690000046,
+        "test_dd": 0.7768197394887604,
+        "yearly": {
+          "2025": {
+            "n_trades": 12,
+            "return": 0.050395806900000464,
+            "max_drawdown": 0.007768197394887604
+          }
+        }
+      },
+      {
+        "train_period": "2025-01 ~ 2025-06",
+        "test_period": "2025-07 ~ 2025-09",
+        "train_trades": 19,
+        "train_return": 9.310224860000075,
+        "train_dd": 0.7931438399999897,
+        "test_trades": 14,
+        "test_return": 14.236191300000007,
+        "test_dd": 1.0538193349463911,
+        "yearly": {
+          "2025": {
+            "n_trades": 14,
+            "return": 0.14236191300000006,
+            "max_drawdown": 0.010538193349463912
+          }
+        }
+      },
+      {
+        "train_period": "2025-04 ~ 2025-09",
+        "test_period": "2025-10 ~ 2025-12",
+        "train_trades": 22,
+        "train_return": 17.790177810000067,
+        "train_dd": 1.0447342299478206,
+        "test_trades": 6,
+        "test_return": -6.329622629999969,
+        "test_dd": 9.498896909999981,
+        "yearly": {
+          "2025": {
+            "n_trades": 6,
+            "return": -0.06329622629999969,
+            "max_drawdown": 0.0949889690999998
+          }
+        }
+      }
+    ],
+    "summary": {
+      "n_windows": 16,
+      "train_avg": 14.513047238750035,
+      "test_avg": 6.898278406250025,
+      "positive_ratio": 0.75,
+      "decay_rate": 47.531564479660254
+    }
+  },
+  "rsi58_wfa": {
+    "windows": [
+      {
+        "train_period": "2021-01 ~ 2021-06",
+        "test_period": "2021-07 ~ 2021-09",
+        "train_trades": 8,
+        "train_return": 6.648527549999998,
+        "train_dd": 1.1250011899999954,
+        "test_trades": 8,
+        "test_return": 36.76475484000004,
+        "test_dd": 1.2413593699999912,
+        "yearly": {
+          "2021": {
+            "n_trades": 8,
+            "return": 0.36764754840000036,
+            "max_drawdown": 0.012413593699999911
+          }
+        }
+      },
+      {
+        "train_period": "2021-04 ~ 2021-09",
+        "test_period": "2021-10 ~ 2021-12",
+        "train_trades": 16,
+        "train_return": 59.191857020000086,
+        "train_dd": 1.1919988264633907,
+        "test_trades": 3,
+        "test_return": 8.700248640000005,
+        "test_dd": 0.04994795999999042,
+        "yearly": {
+          "2021": {
+            "n_trades": 3,
+            "return": 0.08700248640000005,
+            "max_drawdown": 0.0004994795999999042
+          }
+        }
+      },
+      {
+        "train_period": "2021-07 ~ 2021-12",
+        "test_period": "2022-01 ~ 2022-03",
+        "train_trades": 11,
+        "train_return": 36.91282248000003,
+        "train_dd": 7.950212225891352,
+        "test_trades": 11,
+        "test_return": 5.143604520000022,
+        "test_dd": 0.6606532099999894,
+        "yearly": {
+          "2022": {
+            "n_trades": 11,
+            "return": 0.051436045200000224,
+            "max_drawdown": 0.006606532099999895
+          }
+        }
+      },
+      {
+        "train_period": "2021-10 ~ 2022-03",
+        "test_period": "2022-04 ~ 2022-06",
+        "train_trades": 14,
+        "train_return": 29.728444020000055,
+        "train_dd": 0.6999101410897297,
+        "test_trades": 4,
+        "test_return": -4.431301169999992,
+        "test_dd": 8.004761633251297,
+        "yearly": {
+          "2022": {
+            "n_trades": 4,
+            "return": -0.04431301169999992,
+            "max_drawdown": 0.08004761633251296
+          }
+        }
+      },
+      {
+        "train_period": "2022-01 ~ 2022-06",
+        "test_period": "2022-07 ~ 2022-09",
+        "train_trades": 15,
+        "train_return": -17.27141161999997,
+        "train_dd": 21.31847794483429,
+        "test_trades": 8,
+        "test_return": 3.9310590400000076,
+        "test_dd": 0.301872158898703,
+        "yearly": {
+          "2022": {
+            "n_trades": 8,
+            "return": 0.039310590400000074,
+            "max_drawdown": 0.00301872158898703
+          }
+        }
+      },
+      {
+        "train_period": "2022-04 ~ 2022-09",
+        "test_period": "2022-10 ~ 2022-12",
+        "train_trades": 12,
+        "train_return": 8.614478839999997,
+        "train_dd": 8.004761633251297,
+        "test_trades": 10,
+        "test_return": -0.5697186699999729,
+        "test_dd": 2.445929218492483,
+        "yearly": {
+          "2022": {
+            "n_trades": 10,
+            "return": -0.005697186699999729,
+            "max_drawdown": 0.024459292184924826
+          }
+        }
+      },
+      {
+        "train_period": "2022-07 ~ 2022-12",
+        "test_period": "2023-01 ~ 2023-03",
+        "train_trades": 18,
+        "train_return": -3.627487089999995,
+        "train_dd": 7.700486846481241,
+        "test_trades": 11,
+        "test_return": 14.407451330000026,
+        "test_dd": 1.3100049189622673,
+        "yearly": {
+          "2023": {
+            "n_trades": 11,
+            "return": 0.14407451330000026,
+            "max_drawdown": 0.013100049189622674
+          }
+        }
+      },
+      {
+        "train_period": "2023-01 ~ 2023-06",
+        "test_period": "2023-07 ~ 2023-09",
+        "train_trades": 11,
+        "train_return": 14.407451330000026,
+        "train_dd": 1.3100049189622673,
+        "test_trades": 9,
+        "test_return": 0.5816714600000269,
+        "test_dd": 3.2013286439130866,
+        "yearly": {
+          "2023": {
+            "n_trades": 9,
+            "return": 0.005816714600000269,
+            "max_drawdown": 0.032013286439130866
+          }
+        }
+      },
+      {
+        "train_period": "2023-04 ~ 2023-09",
+        "test_period": "2023-10 ~ 2023-12",
+        "train_trades": 9,
+        "train_return": 0.5816714600000269,
+        "train_dd": 3.2013286439130866,
+        "test_trades": 9,
+        "test_return": 2.1277653700000227,
+        "test_dd": 7.291977098094591,
+        "yearly": {
+          "2023": {
+            "n_trades": 9,
+            "return": 0.02127765370000023,
+            "max_drawdown": 0.07291977098094592
+          }
+        }
+      },
+      {
+        "train_period": "2023-07 ~ 2023-12",
+        "test_period": "2024-01 ~ 2024-03",
+        "train_trades": 18,
+        "train_return": -0.32726796999994257,
+        "train_dd": 10.70937627356513,
+        "test_trades": 6,
+        "test_return": 22.852734000000012,
+        "test_dd": 3.74460502202123,
+        "yearly": {
+          "2024": {
+            "n_trades": 6,
+            "return": 0.2285273400000001,
+            "max_drawdown": 0.0374460502202123
+          }
+        }
+      },
+      {
+        "train_period": "2023-10 ~ 2024-03",
+        "test_period": "2024-04 ~ 2024-06",
+        "train_trades": 15,
+        "train_return": 22.005732940000016,
+        "train_dd": 7.291977098094591,
+        "test_trades": 6,
+        "test_return": 0.5456814799999993,
+        "test_dd": 1.8490684132459954,
+        "yearly": {
+          "2024": {
+            "n_trades": 6,
+            "return": 0.005456814799999992,
+            "max_drawdown": 0.018490684132459953
+          }
+        }
+      },
+      {
+        "train_period": "2024-01 ~ 2024-06",
+        "test_period": "2024-07 ~ 2024-09",
+        "train_trades": 12,
+        "train_return": 24.53465726000004,
+        "train_dd": 3.74460502202123,
+        "test_trades": 11,
+        "test_return": 13.52240660000003,
+        "test_dd": 1.7642666599999939,
+        "yearly": {
+          "2024": {
+            "n_trades": 11,
+            "return": 0.1352240660000003,
+            "max_drawdown": 0.01764266659999994
+          }
+        }
+      },
+      {
+        "train_period": "2024-04 ~ 2024-09",
+        "test_period": "2024-10 ~ 2024-12",
+        "train_trades": 17,
+        "train_return": 5.121189100000003,
+        "train_dd": 11.200948222728742,
+        "test_trades": 5,
+        "test_return": 8.015926030000003,
+        "test_dd": 0.08865425000000687,
+        "yearly": {
+          "2024": {
+            "n_trades": 5,
+            "return": 0.08015926030000002,
+            "max_drawdown": 0.0008865425000000687
+          }
+        }
+      },
+      {
+        "train_period": "2024-07 ~ 2024-12",
+        "test_period": "2025-01 ~ 2025-03",
+        "train_trades": 16,
+        "train_return": 37.55441563000003,
+        "train_dd": 1.7642666599999939,
+        "test_trades": 8,
+        "test_return": 0.6795219800000487,
+        "test_dd": 5.481252239999987,
+        "yearly": {
+          "2025": {
+            "n_trades": 8,
+            "return": 0.006795219800000487,
+            "max_drawdown": 0.05481252239999987
+          }
+        }
+      },
+      {
+        "train_period": "2024-10 ~ 2025-03",
+        "test_period": "2025-04 ~ 2025-06",
+        "train_trades": 13,
+        "train_return": 2.3376832700000376,
+        "train_dd": 11.05263885501865,
+        "test_trades": 13,
+        "test_return": 8.372392510000035,
+        "test_dd": 0.6267990192665425,
+        "yearly": {
+          "2025": {
+            "n_trades": 13,
+            "return": 0.08372392510000035,
+            "max_drawdown": 0.006267990192665425
+          }
+        }
+      },
+      {
+        "train_period": "2025-01 ~ 2025-06",
+        "test_period": "2025-07 ~ 2025-09",
+        "train_trades": 21,
+        "train_return": 11.268920660000076,
+        "train_dd": 5.481252239999987,
+        "test_trades": 15,
+        "test_return": 8.60373404000001,
+        "test_dd": 0.9063839567740725,
+        "yearly": {
+          "2025": {
+            "n_trades": 15,
+            "return": 0.0860373404000001,
+            "max_drawdown": 0.009063839567740725
+          }
+        }
+      },
+      {
+        "train_period": "2025-04 ~ 2025-09",
+        "test_period": "2025-10 ~ 2025-12",
+        "train_trades": 24,
+        "train_return": 14.807552400000043,
+        "train_dd": 1.2108422995701564,
+        "test_trades": 9,
+        "test_return": -11.546624979999978,
+        "test_dd": 12.424649224878147,
+        "yearly": {
+          "2025": {
+            "n_trades": 9,
+            "return": -0.11546624979999978,
+            "max_drawdown": 0.12424649224878147
+          }
+        }
+      }
+    ],
+    "summary": {
+      "n_windows": 17,
+      "train_avg": 14.852308075294149,
+      "test_avg": 6.923606295294139,
+      "positive_ratio": 0.8235294117647058,
+      "decay_rate": 46.61636602334629
+    }
+  },
+  "rsi55_wfa": {
+    "windows": [
+      {
+        "train_period": "2022-07 ~ 2022-12",
+        "test_period": "2023-01 ~ 2023-03",
+        "train_trades": 9,
+        "train_return": 0.5842192100000393,
+        "train_dd": 5.218068560008305,
+        "test_trades": 4,
+        "test_return": 5.971330490000022,
+        "test_dd": 0.05494499999999244,
+        "yearly": {
+          "2023": {
+            "n_trades": 4,
+            "return": 0.05971330490000022,
+            "max_drawdown": 0.0005494499999999244
+          }
+        }
+      },
+      {
+        "train_period": "2025-01 ~ 2025-06",
+        "test_period": "2025-07 ~ 2025-09",
+        "train_trades": 8,
+        "train_return": 11.540451080000043,
+        "train_dd": 0.5602410499999824,
+        "test_trades": 12,
+        "test_return": 10.598690850000029,
+        "test_dd": 1.7375960078066393,
+        "yearly": {
+          "2025": {
+            "n_trades": 12,
+            "return": 0.10598690850000028,
+            "max_drawdown": 0.017375960078066393
+          }
+        }
+      }
+    ],
+    "summary": {
+      "n_windows": 2,
+      "train_avg": 6.062335145000041,
+      "test_avg": 8.285010670000025,
+      "positive_ratio": 1.0,
+      "decay_rate": 136.66368605228223
+    }
+  }
+}

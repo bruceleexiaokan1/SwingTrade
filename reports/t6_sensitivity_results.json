@@ -1,0 +1,160 @@
+{
+  "date": "2026-04-04",
+  "strategy": "PATTERN_1 v1.1",
+  "rsi_sensitivity": [
+    {
+      "param_value": 53,
+      "n_signals": 8,
+      "n_trades": 8,
+      "return": 3.9719768682000005,
+      "sharpe": 8.562286970523315,
+      "max_drawdown": 0.022259380733463337
+    },
+    {
+      "param_value": 54,
+      "n_signals": 22,
+      "n_trades": 22,
+      "return": 0.7044130282000004,
+      "sharpe": 4.551925530431327,
+      "max_drawdown": 0.2328863323525014
+    },
+    {
+      "param_value": 55,
+      "n_signals": 45,
+      "n_trades": 41,
+      "return": 4.726332176600004,
+      "sharpe": 3.54416449417023,
+      "max_drawdown": 0.1539785241307221
+    },
+    {
+      "param_value": 56,
+      "n_signals": 71,
+      "n_trades": 62,
+      "return": 2.329536772000004,
+      "sharpe": 5.194517654832987,
+      "max_drawdown": 0.07449188469842916
+    },
+    {
+      "param_value": 57,
+      "n_signals": 101,
+      "n_trades": 84,
+      "return": 2.206162772400006,
+      "sharpe": 4.331607853657855,
+      "max_drawdown": 0.0904580480860094
+    },
+    {
+      "param_value": 58,
+      "n_signals": 156,
+      "n_trades": 122,
+      "return": 1.9508172483000077,
+      "sharpe": 4.019239503617283,
+      "max_drawdown": 0.1368806200053551
+    },
+    {
+      "param_value": 59,
+      "n_signals": 212,
+      "n_trades": 151,
+      "return": 1.152277264300004,
+      "sharpe": 2.7825795052248234,
+      "max_drawdown": 0.12163184306138311
+    },
+    {
+      "param_value": 60,
+      "n_signals": 293,
+      "n_trades": 175,
+      "return": 1.201848142000004,
+      "sharpe": 2.3511704088673,
+      "max_drawdown": 0.13432006352269268
+    },
+    {
+      "param_value": 61,
+      "n_signals": 386,
+      "n_trades": 197,
+      "return": 0.9061542049000054,
+      "sharpe": 2.0289723182776966,
+      "max_drawdown": 0.15580990041976092
+    },
+    {
+      "param_value": 62,
+      "n_signals": 514,
+      "n_trades": 221,
+      "return": 0.5231710066000037,
+      "sharpe": 1.3200869686948906,
+      "max_drawdown": 0.16840774317425306
+    }
+  ],
+  "e7_sensitivity": [
+    {
+      "param_value": 1.0,
+      "n_signals": 160,
+      "n_trades": 125,
+      "return": 1.9503603375000065,
+      "sharpe": 3.973854657474148,
+      "max_drawdown": 0.1423320261316825
+    },
+    {
+      "param_value": 1.5,
+      "n_signals": 159,
+      "n_trades": 125,
+      "return": 1.9503603375000065,
+      "sharpe": 3.993392964785989,
+      "max_drawdown": 0.1423320261316825
+    },
+    {
+      "param_value": 2.0,
+      "n_signals": 156,
+      "n_trades": 122,
+      "return": 1.9508172483000077,
+      "sharpe": 4.019239503617283,
+      "max_drawdown": 0.1368806200053551
+    },
+    {
+      "param_value": 2.5,
+      "n_signals": 141,
+      "n_trades": 112,
+      "return": 2.124284705600004,
+      "sharpe": 4.524140494632187,
+      "max_drawdown": 0.12280416223927364
+    },
+    {
+      "param_value": 3.0,
+      "n_signals": 111,
+      "n_trades": 99,
+      "return": 3.016697453800006,
+      "sharpe": 5.585002635770983,
+      "max_drawdown": 0.12280072130516355
+    },
+    {
+      "param_value": 3.5,
+      "n_signals": 86,
+      "n_trades": 79,
+      "return": 2.541591437300004,
+      "sharpe": 5.5824327942619165,
+      "max_drawdown": 0.11696386028120713
+    },
+    {
+      "param_value": 4.0,
+      "n_signals": 51,
+      "n_trades": 47,
+      "return": 4.130662570300005,
+      "sharpe": 8.477970720555888,
+      "max_drawdown": 0.11404463359210658
+    },
+    {
+      "param_value": 4.5,
+      "n_signals": 34,
+      "n_trades": 33,
+      "return": 1.7798375140000025,
+      "sharpe": 10.79343950777812,
+      "max_drawdown": 0.10628207378909038
+    },
+    {
+      "param_value": 5.0,
+      "n_signals": 20,
+      "n_trades": 20,
+      "return": 0.4207216742000013,
+      "sharpe": 6.436546128912435,
+      "max_drawdown": 0.19604974786291088
+    }
+  ]
+}
